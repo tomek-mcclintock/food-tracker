@@ -1,5 +1,5 @@
-import FoodTracker from '@/components/FoodTracker';
+import { redirect } from 'next/navigation';
 
 export default function Home() {
-  return <FoodTracker />;
+  redirect('/history');
 }
