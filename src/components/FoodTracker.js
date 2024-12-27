@@ -11,6 +11,7 @@ const FoodTracker = () => {
   const [photo, setPhoto] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [results, setResults] = useState(null);
+  const [error, setError] = useState(null);
   const [history, setHistory] = useState([]);
   const webcamRef = React.useRef(null);
 
