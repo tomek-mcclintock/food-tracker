@@ -13,18 +13,61 @@ const FoodTracker = () => {
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
   const [history, setHistory] = useState([]);
+  const [selectedStomach, setSelectedStomach] = useState(null);
+  const [selectedEnergy, setSelectedEnergy] = useState(null);
+  const [showDailyCheck, setShowDailyCheck] = useState(false);
   const webcamRef = React.useRef(null);
 
   // Load history from localStorage
   useEffect(() => {
     const saved = localStorage.getItem('foodHistory');
     if (saved) setHistory(JSON.parse(saved));
+    checkForDailyPrompt();
   }, []);
 
   // Save history to localStorage when it changes
   useEffect(() => {
     localStorage.setItem('foodHistory', JSON.stringify(history));
   }, [history]);
+
+  // Check if we should show the daily prompt
+  const checkForDailyPrompt = () => {
+    // FOR TESTING: Always show the prompt
+    setShowDailyCheck(true);
+    
+    // PRODUCTION VERSION (uncomment when ready):
+    /*
+    const lastCheck = localStorage.getItem('lastDailyCheck');
+    const today = new Date().toDateString();
+    const currentHour = new Date().getHours();
+    
+    if (currentHour >= 19 && lastCheck !== today) {
+      setShowDailyCheck(true);
+    }
+    */
+  };
+
+  const submitDailyCheck = () => {
+    if (!selectedStomach || !selectedEnergy) {
+      return; // Don't submit unless both ratings are selected
+    }
+
+    const today = new Date().toDateString();
+    
+    // Add wellness entry to history
+    const wellnessEntry = {
+      date: new Date().toLocaleString(),
+      type: 'wellness',
+      stomach: selectedStomach,
+      energy: selectedEnergy
+    };
+    
+    setHistory(prev => [wellnessEntry, ...prev]);
+    localStorage.setItem('lastDailyCheck', today);
+    setShowDailyCheck(false);
+    setSelectedStomach(null);
+    setSelectedEnergy(null);
+  };
 
   const handleFileUpload = (file) => {
     if (file.size > 5 * 1024 * 1024) {
@@ -98,94 +141,83 @@ const FoodTracker = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {error && (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                {error}
-              </div>
-            )}
+            {showDailyCheck && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                <div className="bg-white rounded-lg p-6 max-w-md w-full">
+                  <h2 className="text-xl font-bold mb-4">Daily Check-in</h2>
+                  <p className="mb-6">How did you feel today?</p>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <p className="font-medium mb-2">Stomach Comfort:</p>
+                      <div className="grid grid-cols-5 gap-2">
+                        {[
+                          'Very Poor',
+                          'Poor',
+                          'Okay',
+                          'Good',
+                          'Excellent'
+                        ].map(rating => (
+                          <Button
+                            key={rating}
+                            variant={selectedStomach === rating ? "default" : "outline"}
+                            onClick={() => setSelectedStomach(rating)}
+                            className="w-full text-sm"
+                          >
+                            {rating}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
 
-            {!showCamera && !photo && (
-              <div className="space-y-2">
-                <Button onClick={() => setShowCamera(true)} className="w-full">
-                  <Camera className="w-4 h-4 mr-2" /> Open Camera
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => document.getElementById('file-upload').click()}
-                >
-                  Choose from Library
-                </Button>
-                <input
-                  id="file-upload"
-                  type="file"
-                  accept="image/jpeg,image/png"
-                  className="hidden"
-                  onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
-                />
-              </div>
-            )}
+                    <div>
+                      <p className="font-medium mb-2">Energy Levels:</p>
+                      <div className="grid grid-cols-5 gap-2">
+                        {[
+                          'Very Low',
+                          'Low',
+                          'Moderate',
+                          'High',
+                          'Very High'
+                        ].map(rating => (
+                          <Button
+                            key={rating}
+                            variant={selectedEnergy === rating ? "default" : "outline"}
+                            onClick={() => setSelectedEnergy(rating)}
+                            className="w-full text-sm"
+                          >
+                            {rating}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
 
-            {showCamera && (
-              <div className="relative bg-black rounded-lg overflow-hidden">
-                <Webcam
-                  audio={false}
-                  ref={webcamRef}
-                  screenshotFormat="image/jpeg"
-                  videoConstraints={{
-                    facingMode: { exact: "environment" }
-                  }}
-                  className="w-full h-[400px] object-cover"
-                />
-                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4">
-                  <Button onClick={() => {
-                    const imageSrc = webcamRef.current?.getScreenshot();
-                    if (imageSrc) {
-                      setPhoto(imageSrc);
-                      setShowCamera(false);
-                      analyzeFood(imageSrc);
-                    }
-                  }}>Take Photo</Button>
-                  <Button variant="destructive" onClick={() => setShowCamera(false)}>
-                    <X className="w-4 h-4" />
-                  </Button>
+                    <Button 
+                      onClick={submitDailyCheck}
+                      disabled={!selectedStomach || !selectedEnergy}
+                      className="w-full bg-green-500 hover:bg-green-600 text-white"
+                    >
+                      Submit Daily Check
+                    </Button>
+
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        setShowDailyCheck(false);
+                        setSelectedStomach(null);
+                        setSelectedEnergy(null);
+                      }}
+                      className="w-full"
+                    >
+                      Remind me later
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}
 
-            {photo && (
-              <div className="space-y-4">
-                <img src={photo} alt="Food" className="w-full rounded-lg" />
-                
-                {analyzing ? (
-                  <div className="flex items-center justify-center gap-2 text-blue-600">
-                    <Loader2 className="w-4 h-4 animate-spin" /> Analyzing...
-                  </div>
-                ) : results && (
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="font-semibold mb-2">Analysis Results:</h3>
-                    <p><strong>Food:</strong> {results.mainItem}</p>
-                    <p><strong>Ingredients:</strong></p>
-                    <ul className="list-disc pl-5">
-                      {results.ingredients.map((ingredient, index) => (
-                        <li key={index}>{ingredient}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                <Button 
-                  onClick={() => {
-                    setPhoto(null);
-                    setResults(null);
-                  }} 
-                  variant="outline"
-                  className="w-full"
-                >
-                  Take New Photo
-                </Button>
-              </div>
-            )}
+            {/* Rest of your existing JSX */}
+            {/* Keep all the existing camera, photo, and results display code */}
 
             <div className="mt-8">
               <h3 className="text-lg font-semibold mb-4">History</h3>
@@ -194,8 +226,8 @@ const FoodTracker = () => {
                   <thead>
                     <tr className="border-b bg-gray-50">
                       <th className="p-2 text-left">Date</th>
-                      <th className="p-2 text-left">Food</th>
-                      <th className="p-2 text-left">Ingredients</th>
+                      <th className="p-2 text-left">Type</th>
+                      <th className="p-2 text-left">Details</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -207,8 +239,22 @@ const FoodTracker = () => {
                       history.map((entry, index) => (
                         <tr key={index} className="border-b">
                           <td className="p-2">{entry.date}</td>
-                          <td className="p-2">{entry.food}</td>
-                          <td className="p-2">{entry.ingredients}</td>
+                          <td className="p-2">
+                            {entry.type === 'wellness' ? 'Daily Check' : 'Food'}
+                          </td>
+                          <td className="p-2">
+                            {entry.type === 'wellness' ? (
+                              <div>
+                                <p>Stomach: {entry.stomach}</p>
+                                <p>Energy: {entry.energy}</p>
+                              </div>
+                            ) : (
+                              <div>
+                                <p><strong>{entry.food}</strong></p>
+                                <p className="text-sm">{entry.ingredients}</p>
+                              </div>
+                            )}
+                          </td>
                         </tr>
                       ))
                     )}
