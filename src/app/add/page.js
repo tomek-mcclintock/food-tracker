@@ -92,18 +92,6 @@ const AddFood = () => {
       const parsedResults = JSON.parse(data.content[0].text);
       setResults(parsedResults);
 
-      // Save to localStorage
-      const newEntry = {
-        date: new Date().toLocaleString(),
-        food: parsedResults.mainItem,
-        ingredients: parsedResults.ingredients.join(", "),
-        type: 'food'
-      };
-      
-      const history = JSON.parse(localStorage.getItem('foodHistory') || '[]');
-      history.unshift(newEntry);
-      localStorage.setItem('foodHistory', JSON.stringify(history));
-
     } catch (err) {
       setError(err.message);
     } finally {
@@ -252,7 +240,7 @@ const AddFood = () => {
               </div>
             )}
 
-            {photo && (
+                            {photo && (
               <div className="space-y-4">
                 <img src={photo} alt="Food" className="w-full rounded-lg" />
                 
@@ -261,28 +249,63 @@ const AddFood = () => {
                     <Loader2 className="w-4 h-4 animate-spin" /> Analyzing...
                   </div>
                 ) : results && (
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h3 className="font-semibold mb-2">Analysis Results:</h3>
-                    <p><strong>Food:</strong> {results.mainItem}</p>
-                    <p><strong>Ingredients:</strong></p>
-                    <ul className="list-disc pl-5">
-                      {results.ingredients.map((ingredient, index) => (
-                        <li key={index}>{ingredient}</li>
-                      ))}
-                    </ul>
+                  <div className="space-y-4">
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <h3 className="font-semibold mb-2">Analysis Results:</h3>
+                      <p><strong>Food:</strong> {results.mainItem}</p>
+                      <p><strong>Ingredients:</strong></p>
+                      <ul className="list-disc pl-5">
+                        {results.ingredients.map((ingredient, index) => (
+                          <li key={index}>{ingredient}</li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <Button 
+                        onClick={() => {
+                          // Save to localStorage
+                          const newEntry = {
+                            date: new Date().toLocaleString(),
+                            food: results.mainItem,
+                            ingredients: results.ingredients.join(", "),
+                            type: 'food'
+                          };
+                          
+                          const history = JSON.parse(localStorage.getItem('foodHistory') || '[]');
+                          history.unshift(newEntry);
+                          localStorage.setItem('foodHistory', JSON.stringify(history));
+
+                          // Reset the form
+                          setPhoto(null);
+                          setResults(null);
+                        }} 
+                        className="w-full bg-green-500 hover:bg-green-600 text-white"
+                      >
+                        Confirm & Save
+                      </Button>
+
+                      <Button 
+                        onClick={() => analyzeFood(photo)}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        Reanalyze Photo
+                      </Button>
+
+                      <Button 
+                        onClick={() => {
+                          setPhoto(null);
+                          setResults(null);
+                        }} 
+                        variant="outline"
+                        className="w-full"
+                      >
+                        Take New Photo
+                      </Button>
+                    </div>
                   </div>
                 )}
-
-                <Button 
-                  onClick={() => {
-                    setPhoto(null);
-                    setResults(null);
-                  }} 
-                  variant="outline"
-                  className="w-full"
-                >
-                  Take New Photo
-                </Button>
               </div>
             )}
           </div>
