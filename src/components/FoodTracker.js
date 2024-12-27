@@ -98,21 +98,13 @@ const FoodTracker = () => {
         throw new Error(`API Error: ${errorMessage}`);
       }
 
-      if (!data.messages || !data.messages[0]?.content[0]?.text) {
-        throw new Error('Invalid response format from API');
-      }
-
-      const analysisText = data.messages[0].content[0].text;
+      // Extract the text content from Claude's response
+      const analysisText = data.content[0].text;
       console.log('Analysis text:', analysisText);
 
       let parsedResults;
       try {
-        // Find the JSON object in the text
-        const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-          throw new Error('No JSON found in response');
-        }
-        parsedResults = JSON.parse(jsonMatch[0]);
+        parsedResults = JSON.parse(analysisText);
       } catch (e) {
         console.error('Parse error:', e);
         throw new Error('Failed to parse analysis results');
@@ -166,15 +158,60 @@ const FoodTracker = () => {
                   <input
                     id="file-upload"
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png"
                     className="hidden"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) {
+                        // Validate file size
+                        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                          setError('Image size too large. Please choose an image under 5MB.');
+                          return;
+                        }
+                        
                         const reader = new FileReader();
-                        reader.onloadend = () => {
-                          setPhoto(reader.result);
-                          analyzeFood(reader.result);
+                        reader.onloadend = async () => {
+                          try {
+                            // Create an image element to get dimensions
+                            const img = new Image();
+                            img.onload = async () => {
+                              // Resize if needed
+                              const maxDim = 1500;
+                              let width = img.width;
+                              let height = img.height;
+                              
+                              if (width > maxDim || height > maxDim) {
+                                if (width > height) {
+                                  height = (height / width) * maxDim;
+                                  width = maxDim;
+                                } else {
+                                  width = (width / height) * maxDim;
+                                  height = maxDim;
+                                }
+                              }
+
+                              // Create canvas for resizing
+                              const canvas = document.createElement('canvas');
+                              canvas.width = width;
+                              canvas.height = height;
+                              
+                              // Draw and resize image
+                              const ctx = canvas.getContext('2d');
+                              ctx.drawImage(img, 0, 0, width, height);
+                              
+                              // Convert to JPEG and reduce quality
+                              const resizedImage = canvas.toDataURL('image/jpeg', 0.8);
+                              
+                              setPhoto(resizedImage);
+                              analyzeFood(resizedImage);
+                            };
+                            img.src = reader.result;
+                          } catch (err) {
+                            setError('Error processing image: ' + err.message);
+                          }
+                        };
+                        reader.onerror = () => {
+                          setError('Error reading file');
                         };
                         reader.readAsDataURL(file);
                       }
