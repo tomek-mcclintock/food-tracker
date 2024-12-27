@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Webcam from 'react-webcam';
 import { Camera, X, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,116 +15,76 @@ const FoodTracker = () => {
   const [history, setHistory] = useState([]);
   const webcamRef = React.useRef(null);
 
-  // Load history from localStorage on component mount
+  // Load history from localStorage
   useEffect(() => {
-    const savedHistory = localStorage.getItem('foodHistory');
-    if (savedHistory) {
-      setHistory(JSON.parse(savedHistory));
-    }
+    const saved = localStorage.getItem('foodHistory');
+    if (saved) setHistory(JSON.parse(saved));
   }, []);
 
-  // Save history to localStorage whenever it changes
+  // Save history to localStorage when it changes
   useEffect(() => {
     localStorage.setItem('foodHistory', JSON.stringify(history));
   }, [history]);
 
-  const videoConstraints = {
-    width: 1280,
-    height: 720,
-    facingMode: { exact: "environment" }
-  };
-
-  const capturePhoto = useCallback(() => {
-    const imageSrc = webcamRef.current?.getScreenshot();
-    if (imageSrc) {
-      setPhoto(imageSrc);
-      setShowCamera(false);
-      analyzeFood(imageSrc);
+  const handleFileUpload = (file) => {
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image too large. Please choose an image under 5MB.');
+      return;
     }
-  }, [webcamRef]);
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPhoto(reader.result);
+      analyzeFood(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
 
   const analyzeFood = async (imageSrc) => {
     setAnalyzing(true);
     setError(null);
     try {
-      console.log('Starting analysis...');
-      
-      // Validate image data
-      if (!imageSrc || !imageSrc.includes('base64')) {
-        throw new Error('Invalid image data');
-      }
-
       const base64Data = imageSrc.split('base64,')[1];
-      console.log('Image data length:', base64Data.length);
-
-      const requestBody = {
-        model: "claude-3-opus-20240229",
-        max_tokens: 1024,
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: "Analyze this food image. Return ONLY a JSON object with format {\"mainItem\": \"name of dish\", \"ingredients\": [\"ingredient1\", \"ingredient2\"]}"
-              },
-              {
-                type: "image",
-                source: {
-                  type: "base64",
-                  media_type: "image/jpeg",
-                  data: base64Data
-                }
-              }
-            ]
-          }
-        ]
-      };
-
-      console.log('Sending request to API...');
       const response = await fetch('/api/analyze', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestBody)
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: "claude-3-opus-20240229",
+          max_tokens: 1024,
+          messages: [{
+            role: "user",
+            content: [{
+              type: "text",
+              text: "Analyze this food image. Return ONLY a JSON object with format {\"mainItem\": \"name of dish\", \"ingredients\": [\"ingredient1\", \"ingredient2\"]}"
+            }, {
+              type: "image",
+              source: {
+                type: "base64",
+                media_type: "image/jpeg",
+                data: base64Data
+              }
+            }]
+          }]
+        })
       });
 
       const data = await response.json();
-      console.log('Full API Response:', JSON.stringify(data, null, 2));
 
-      if (!response.ok) {
-        const errorMessage = data.error?.message || JSON.stringify(data.error) || 'Unknown error';
-        throw new Error(`API Error: ${errorMessage}`);
-      }
+      if (!response.ok) throw new Error(data.error?.message || 'Analysis failed');
 
-      // Extract the text content from Claude's response
-      const analysisText = data.content[0].text;
-      console.log('Analysis text:', analysisText);
-
-      let parsedResults;
-      try {
-        parsedResults = JSON.parse(analysisText);
-      } catch (e) {
-        console.error('Parse error:', e);
-        throw new Error('Failed to parse analysis results');
-      }
-
-      console.log('Final results:', parsedResults);
+      const parsedResults = JSON.parse(data.content[0].text);
       setResults(parsedResults);
-      
+
       // Add to history
       const newEntry = {
         date: new Date().toLocaleString(),
-        food: mockResults.mainItem,
-        ingredients: mockResults.ingredients.join(", "),
-        image: imageSrc
+        food: parsedResults.mainItem,
+        ingredients: parsedResults.ingredients.join(", ")
       };
-      
       setHistory(prev => [newEntry, ...prev]);
-      
-    } catch (error) {
-      console.error('Analysis error:', error);
+
+    } catch (err) {
+      setError(err.message);
     } finally {
       setAnalyzing(false);
     }
@@ -138,86 +98,31 @@ const FoodTracker = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                {error}
+              </div>
+            )}
+
             {!showCamera && !photo && (
               <div className="space-y-2">
-                <Button 
-                  onClick={() => setShowCamera(true)}
-                  className="w-full flex items-center justify-center gap-2"
-                >
-                  <Camera className="w-4 h-4" />
-                  Open Camera
+                <Button onClick={() => setShowCamera(true)} className="w-full">
+                  <Camera className="w-4 h-4 mr-2" /> Open Camera
                 </Button>
-                <div className="relative">
-                  <Button 
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => document.getElementById('file-upload').click()}
-                  >
-                    Choose from Library
-                  </Button>
-                  <input
-                    id="file-upload"
-                    type="file"
-                    accept="image/jpeg,image/png"
-                    className="hidden"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        // Validate file size
-                        if (file.size > 5 * 1024 * 1024) { // 5MB limit
-                          setError('Image size too large. Please choose an image under 5MB.');
-                          return;
-                        }
-                        
-                        const reader = new FileReader();
-                        reader.onloadend = async () => {
-                          try {
-                            // Create an image element to get dimensions
-                            const img = new Image();
-                            img.onload = async () => {
-                              // Resize if needed
-                              const maxDim = 1500;
-                              let width = img.width;
-                              let height = img.height;
-                              
-                              if (width > maxDim || height > maxDim) {
-                                if (width > height) {
-                                  height = (height / width) * maxDim;
-                                  width = maxDim;
-                                } else {
-                                  width = (width / height) * maxDim;
-                                  height = maxDim;
-                                }
-                              }
-
-                              // Create canvas for resizing
-                              const canvas = document.createElement('canvas');
-                              canvas.width = width;
-                              canvas.height = height;
-                              
-                              // Draw and resize image
-                              const ctx = canvas.getContext('2d');
-                              ctx.drawImage(img, 0, 0, width, height);
-                              
-                              // Convert to JPEG and reduce quality
-                              const resizedImage = canvas.toDataURL('image/jpeg', 0.8);
-                              
-                              setPhoto(resizedImage);
-                              analyzeFood(resizedImage);
-                            };
-                            img.src = reader.result;
-                          } catch (err) {
-                            setError('Error processing image: ' + err.message);
-                          }
-                        };
-                        reader.onerror = () => {
-                          setError('Error reading file');
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                  />
-                </div>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => document.getElementById('file-upload').click()}
+                >
+                  Choose from Library
+                </Button>
+                <input
+                  id="file-upload"
+                  type="file"
+                  accept="image/jpeg,image/png"
+                  className="hidden"
+                  onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
+                />
               </div>
             )}
 
@@ -227,23 +132,21 @@ const FoodTracker = () => {
                   audio={false}
                   ref={webcamRef}
                   screenshotFormat="image/jpeg"
-                  videoConstraints={videoConstraints}
-                  className="w-full h-[400px] object-cover"
-                  onUserMediaError={(err) => {
-                    console.error('Webcam error:', err);
-                    if (err.name === 'OverconstrainedError') {
-                      videoConstraints.facingMode = "environment";
-                    }
+                  videoConstraints={{
+                    facingMode: { exact: "environment" }
                   }}
+                  className="w-full h-[400px] object-cover"
                 />
                 <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4">
-                  <Button onClick={capturePhoto}>
-                    Take Photo
-                  </Button>
-                  <Button 
-                    variant="destructive" 
-                    onClick={() => setShowCamera(false)}
-                  >
+                  <Button onClick={() => {
+                    const imageSrc = webcamRef.current?.getScreenshot();
+                    if (imageSrc) {
+                      setPhoto(imageSrc);
+                      setShowCamera(false);
+                      analyzeFood(imageSrc);
+                    }
+                  }}>Take Photo</Button>
+                  <Button variant="destructive" onClick={() => setShowCamera(false)}>
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
@@ -252,17 +155,13 @@ const FoodTracker = () => {
 
             {photo && (
               <div className="space-y-4">
-                <img 
-                  src={photo} 
-                  alt="Captured food" 
-                  className="w-full rounded-lg"
-                />
+                <img src={photo} alt="Food" className="w-full rounded-lg" />
+                
                 {analyzing ? (
                   <div className="flex items-center justify-center gap-2 text-blue-600">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Analyzing food...
+                    <Loader2 className="w-4 h-4 animate-spin" /> Analyzing...
                   </div>
-                ) : results ? (
+                ) : results && (
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <h3 className="font-semibold mb-2">Analysis Results:</h3>
                     <p><strong>Food:</strong> {results.mainItem}</p>
@@ -273,7 +172,8 @@ const FoodTracker = () => {
                       ))}
                     </ul>
                   </div>
-                ) : null}
+                )}
+
                 <Button 
                   onClick={() => {
                     setPhoto(null);
@@ -289,7 +189,7 @@ const FoodTracker = () => {
 
             <div className="mt-8">
               <h3 className="text-lg font-semibold mb-4">History</h3>
-              <div className="border rounded-lg overflow-hidden">
+              <div className="border rounded-lg">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b bg-gray-50">
@@ -305,7 +205,7 @@ const FoodTracker = () => {
                       </tr>
                     ) : (
                       history.map((entry, index) => (
-                        <tr key={index} className="border-b hover:bg-gray-50">
+                        <tr key={index} className="border-b">
                           <td className="p-2">{entry.date}</td>
                           <td className="p-2">{entry.food}</td>
                           <td className="p-2">{entry.ingredients}</td>
