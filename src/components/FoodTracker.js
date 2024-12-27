@@ -7,15 +7,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 const FoodTracker = () => {
+  // State declarations
   const [showCamera, setShowCamera] = useState(false);
   const [photo, setPhoto] = useState(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
   const [history, setHistory] = useState([]);
+  const [showDailyCheck, setShowDailyCheck] = useState(false);
   const [selectedStomach, setSelectedStomach] = useState(null);
   const [selectedEnergy, setSelectedEnergy] = useState(null);
-  const [showDailyCheck, setShowDailyCheck] = useState(false);
   const webcamRef = React.useRef(null);
 
   // Load history from localStorage
@@ -47,6 +48,22 @@ const FoodTracker = () => {
     */
   };
 
+  // Handle file upload
+  const handleFileUpload = (file) => {
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image too large. Please choose an image under 5MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPhoto(reader.result);
+      analyzeFood(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Submit daily check
   const submitDailyCheck = () => {
     if (!selectedStomach || !selectedEnergy) {
       return; // Don't submit unless both ratings are selected
@@ -69,20 +86,7 @@ const FoodTracker = () => {
     setSelectedEnergy(null);
   };
 
-  const handleFileUpload = (file) => {
-    if (file.size > 5 * 1024 * 1024) {
-      setError('Image too large. Please choose an image under 5MB.');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPhoto(reader.result);
-      analyzeFood(reader.result);
-    };
-    reader.readAsDataURL(file);
-  };
-
+  // Analyze food image
   const analyzeFood = async (imageSrc) => {
     setAnalyzing(true);
     setError(null);
@@ -137,7 +141,7 @@ const FoodTracker = () => {
       setAnalyzing(false);
     }
   };
-  
+
   return (
     <div className="w-full max-w-2xl mx-auto p-4">
       <Card>
@@ -221,8 +225,94 @@ const FoodTracker = () => {
               </div>
             )}
 
-            {/* Rest of your existing JSX */}
-            {/* Keep all the existing camera, photo, and results display code */}
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                {error}
+              </div>
+            )}
+
+            {!showCamera && !photo && (
+              <div className="space-y-2">
+                <Button onClick={() => setShowCamera(true)} className="w-full">
+                  <Camera className="w-4 h-4 mr-2" /> Open Camera
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => document.getElementById('file-upload').click()}
+                >
+                  Choose from Library
+                </Button>
+                <input
+                  id="file-upload"
+                  type="file"
+                  accept="image/jpeg,image/png"
+                  className="hidden"
+                  onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
+                />
+              </div>
+            )}
+
+            {showCamera && (
+              <div className="relative bg-black rounded-lg overflow-hidden">
+                <Webcam
+                  audio={false}
+                  ref={webcamRef}
+                  screenshotFormat="image/jpeg"
+                  videoConstraints={{
+                    facingMode: { exact: "environment" }
+                  }}
+                  className="w-full h-[400px] object-cover"
+                />
+                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4">
+                  <Button onClick={() => {
+                    const imageSrc = webcamRef.current?.getScreenshot();
+                    if (imageSrc) {
+                      setPhoto(imageSrc);
+                      setShowCamera(false);
+                      analyzeFood(imageSrc);
+                    }
+                  }}>Take Photo</Button>
+                  <Button variant="destructive" onClick={() => setShowCamera(false)}>
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {photo && (
+              <div className="space-y-4">
+                <img src={photo} alt="Food" className="w-full rounded-lg" />
+                
+                {analyzing ? (
+                  <div className="flex items-center justify-center gap-2 text-blue-600">
+                    <Loader2 className="w-4 h-4 animate-spin" /> Analyzing...
+                  </div>
+                ) : results && (
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <h3 className="font-semibold mb-2">Analysis Results:</h3>
+                    <p><strong>Food:</strong> {results.mainItem}</p>
+                    <p><strong>Ingredients:</strong></p>
+                    <ul className="list-disc pl-5">
+                      {results.ingredients.map((ingredient, index) => (
+                        <li key={index}>{ingredient}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                <Button 
+                  onClick={() => {
+                    setPhoto(null);
+                    setResults(null);
+                  }} 
+                  variant="outline"
+                  className="w-full"
+                >
+                  Take New Photo
+                </Button>
+              </div>
+            )}
 
             <div className="mt-8">
               <h3 className="text-lg font-semibold mb-4">History</h3>
