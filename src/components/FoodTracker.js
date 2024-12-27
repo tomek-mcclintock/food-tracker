@@ -65,7 +65,7 @@ const FoodTracker = () => {
                 source: {
                   type: "base64",
                   media_type: "image/jpeg",
-                  data: imageSrc.split(',')[1]
+                  data: imageSrc.replace(/^data:image\/[a-z]+;base64,/, '')
                 }
               }
             ]
