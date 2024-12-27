@@ -112,8 +112,12 @@ const FoodTracker = () => {
       });
 
       const data = await response.json();
+      console.log('Full API Response:', JSON.stringify(data, null, 2));
 
-      if (!response.ok) throw new Error(data.error?.message || 'Analysis failed');
+      if (!response.ok) {
+        const errorMessage = data.error?.message || JSON.stringify(data.error) || 'Unknown error';
+        throw new Error(`API Error: ${errorMessage}`);
+      }
 
       const parsedResults = JSON.parse(data.content[0].text);
       setResults(parsedResults);
@@ -122,7 +126,8 @@ const FoodTracker = () => {
       const newEntry = {
         date: new Date().toLocaleString(),
         food: parsedResults.mainItem,
-        ingredients: parsedResults.ingredients.join(", ")
+        ingredients: parsedResults.ingredients.join(", "),
+        type: 'food'
       };
       setHistory(prev => [newEntry, ...prev]);
 
@@ -132,7 +137,7 @@ const FoodTracker = () => {
       setAnalyzing(false);
     }
   };
-
+  
   return (
     <div className="w-full max-w-2xl mx-auto p-4">
       <Card>
