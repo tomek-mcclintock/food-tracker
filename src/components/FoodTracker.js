@@ -49,13 +49,13 @@ const FoodTracker = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: "claude-3-opus-20240229",
+          model: "claude-3-haiku-20240307",
           max_tokens: 1024,
           messages: [{
             role: "user",
             content: [{
               type: "text",
-              text: "Analyze this food image. Return ONLY a JSON object with format {\"mainItem\": \"name of dish\", \"ingredients\": [\"ingredient1\", \"ingredient2\"]}"
+              text: "Analyze this food image carefully. Break down the dish into all its component ingredients, being as specific as possible. For example, if it's a hamburger, list ingredients like 'ground beef', 'wheat bun', etc. Include all ingredients, sauces, and garnishes you can see. Include common ingredients that would be needed to make the dish even if not directly visible (like salt or oil). Return ONLY a JSON object with format {\"mainItem\": \"detailed name of dish\", \"ingredients\": [\"ingredient1\", \"ingredient2\"]}"
             }, {
               type: "image",
               source: {
