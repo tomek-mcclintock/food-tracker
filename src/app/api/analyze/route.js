@@ -1,17 +1,9 @@
 import { NextResponse } from 'next/server';
 
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '10mb'
-    }
-  }
-};
-
 export async function POST(request) {
   try {
     const body = await request.json();
-    console.log('Sending request to Anthropic');
+    console.log('Request received, body size:', JSON.stringify(body).length);
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -24,16 +16,25 @@ export async function POST(request) {
     });
 
     const data = await response.json();
-    console.log('Received response from Anthropic');
-
+    
     if (!response.ok) {
-      console.error('Error from Anthropic:', data);
-      return NextResponse.json(data, { status: response.status });
+      console.error('Anthropic API error:', data);
+      return NextResponse.json({
+        error: {
+          message: data.error?.message || JSON.stringify(data.error) || 'Unknown error',
+          details: data
+        }
+      }, { status: response.status });
     }
 
     return NextResponse.json(data);
   } catch (error) {
     console.error('Server error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({
+      error: {
+        message: error.message,
+        stack: error.stack
+      }
+    }, { status: 500 });
   }
 }

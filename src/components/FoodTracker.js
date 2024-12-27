@@ -49,6 +49,14 @@ const FoodTracker = () => {
     try {
       console.log('Starting analysis...');
       
+      // Validate image data
+      if (!imageSrc || !imageSrc.includes('base64')) {
+        throw new Error('Invalid image data');
+      }
+
+      const base64Data = imageSrc.split('base64,')[1];
+      console.log('Image data length:', base64Data.length);
+
       const requestBody = {
         model: "claude-3-opus-20240229",
         max_tokens: 1024,
@@ -65,7 +73,7 @@ const FoodTracker = () => {
                 source: {
                   type: "base64",
                   media_type: "image/jpeg",
-                  data: imageSrc.replace(/^data:image\/[a-z]+;base64,/, '')
+                  data: base64Data
                 }
               }
             ]
@@ -83,10 +91,11 @@ const FoodTracker = () => {
       });
 
       const data = await response.json();
-      console.log('API Response:', data);
+      console.log('Full API Response:', JSON.stringify(data, null, 2));
 
       if (!response.ok) {
-        throw new Error(`API Error: ${data.error || 'Unknown error'}`);
+        const errorMessage = data.error?.message || JSON.stringify(data.error) || 'Unknown error';
+        throw new Error(`API Error: ${errorMessage}`);
       }
 
       if (!data.messages || !data.messages[0]?.content[0]?.text) {
