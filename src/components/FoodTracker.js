@@ -44,9 +44,10 @@ const FoodTracker = () => {
 
   const analyzeFood = async (imageSrc) => {
     setAnalyzing(true);
+    setError(null);
     try {
-      console.log('Frontend: Starting analysis');
-      // Create API request body
+      console.log('Starting analysis...');
+      
       const requestBody = {
         model: "claude-3-opus-20240229",
         max_tokens: 1024,
@@ -56,7 +57,7 @@ const FoodTracker = () => {
             content: [
               {
                 type: "text",
-                text: "Analyze this food image. Identify the main dish and list all visible ingredients. Format your response as JSON with 'mainItem' and 'ingredients' fields. Only respond with the JSON, no other text."
+                text: "Analyze this food image. Return ONLY a JSON object with format {\"mainItem\": \"name of dish\", \"ingredients\": [\"ingredient1\", \"ingredient2\"]}"
               },
               {
                 type: "image",
@@ -71,7 +72,7 @@ const FoodTracker = () => {
         ]
       };
 
-      console.log('Frontend: Sending request to /api/analyze');
+      console.log('Sending request to API...');
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: {
@@ -81,27 +82,34 @@ const FoodTracker = () => {
       });
 
       const data = await response.json();
-      console.log('Frontend: Received response:', data);
+      console.log('API Response:', data);
 
       if (!response.ok) {
-        throw new Error(data.error || 'Analysis failed');
+        throw new Error(`API Error: ${data.error || 'Unknown error'}`);
       }
 
-      // Extract the JSON from Claude's response
-      const content = data.messages[0].content[0].text;
-      console.log('Frontend: Parsing content:', content);
-      
+      if (!data.messages || !data.messages[0]?.content[0]?.text) {
+        throw new Error('Invalid response format from API');
+      }
+
+      const analysisText = data.messages[0].content[0].text;
+      console.log('Analysis text:', analysisText);
+
       let parsedResults;
       try {
-        parsedResults = JSON.parse(content);
+        // Find the JSON object in the text
+        const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+          throw new Error('No JSON found in response');
+        }
+        parsedResults = JSON.parse(jsonMatch[0]);
       } catch (e) {
-        console.error('Frontend: JSON parse error:', e);
-        console.log('Frontend: Raw content that failed to parse:', content);
+        console.error('Parse error:', e);
         throw new Error('Failed to parse analysis results');
       }
 
+      console.log('Final results:', parsedResults);
       setResults(parsedResults);
-      console.log('Frontend: Analysis complete', parsedResults);
       
       // Add to history
       const newEntry = {

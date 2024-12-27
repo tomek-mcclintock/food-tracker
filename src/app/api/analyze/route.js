@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 export async function POST(request) {
   try {
     const body = await request.json();
-    console.log('Backend: Sending request to Anthropic');
+    console.log('Received request');
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -16,15 +16,16 @@ export async function POST(request) {
     });
 
     const data = await response.json();
-    console.log('Backend: Received response from Anthropic:', data);
+    console.log('Anthropic response:', data);
 
     if (!response.ok) {
-      throw new Error(`Failed to analyze image: ${data.error?.message || 'Unknown error'}`);
+      console.error('Anthropic error:', data);
+      return NextResponse.json({ error: data.error?.message || 'API request failed' }, { status: response.status });
     }
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Backend: Analysis error:', error);
+    console.error('Server error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
