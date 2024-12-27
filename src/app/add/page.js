@@ -7,11 +7,34 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 const AddFood = () => {
-  const [showCamera, setShowCamera] = useState(false);
-  const [photo, setPhoto] = useState(null);
-  const [analyzing, setAnalyzing] = useState(false);
-  const [results, setResults] = useState(null);
-  const [error, setError] = useState(null);
+  // Add new state variables at the top with other state declarations
+  const [showWellnessCheck, setShowWellnessCheck] = useState(false);
+  const [selectedStomach, setSelectedStomach] = useState(null);
+  const [selectedEnergy, setSelectedEnergy] = useState(null);
+
+  // Add new function after other function declarations
+  const submitWellnessCheck = () => {
+    if (!selectedStomach || !selectedEnergy) {
+      return;
+    }
+
+    // Add wellness entry to history
+    const wellnessEntry = {
+      date: new Date().toLocaleString(),
+      type: 'wellness',
+      stomach: selectedStomach,
+      energy: selectedEnergy
+    };
+    
+    // Save to localStorage
+    const history = JSON.parse(localStorage.getItem('foodHistory') || '[]');
+    history.unshift(wellnessEntry);
+    localStorage.setItem('foodHistory', JSON.stringify(history));
+    
+    setShowWellnessCheck(false);
+    setSelectedStomach(null);
+    setSelectedEnergy(null);
+  };
   const webcamRef = React.useRef(null);
 
   const handleFileUpload = (file) => {
@@ -91,6 +114,86 @@ const AddFood = () => {
       <Card>
         <CardContent className="p-4">
           <div className="space-y-4">
+            <Button 
+              onClick={() => setShowWellnessCheck(true)}
+              className="w-full bg-green-500 hover:bg-green-600 text-white mb-4"
+            >
+              How I'm Feeling
+            </Button>
+
+            {showWellnessCheck && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                <div className="bg-white rounded-lg p-6 max-w-md w-full">
+                  <h2 className="text-xl font-bold mb-4">How are you feeling?</h2>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <p className="font-medium mb-2">Stomach Comfort:</p>
+                      <div className="grid grid-cols-5 gap-2">
+                        {[
+                          'Very Poor',
+                          'Poor',
+                          'Okay',
+                          'Good',
+                          'Excellent'
+                        ].map(rating => (
+                          <Button
+                            key={rating}
+                            variant={selectedStomach === rating ? "default" : "outline"}
+                            onClick={() => setSelectedStomach(rating)}
+                            className="w-full text-sm"
+                          >
+                            {rating}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="font-medium mb-2">Energy Levels:</p>
+                      <div className="grid grid-cols-5 gap-2">
+                        {[
+                          'Very Low',
+                          'Low',
+                          'Moderate',
+                          'High',
+                          'Very High'
+                        ].map(rating => (
+                          <Button
+                            key={rating}
+                            variant={selectedEnergy === rating ? "default" : "outline"}
+                            onClick={() => setSelectedEnergy(rating)}
+                            className="w-full text-sm"
+                          >
+                            {rating}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <Button 
+                      onClick={submitWellnessCheck}
+                      disabled={!selectedStomach || !selectedEnergy}
+                      className="w-full bg-green-500 hover:bg-green-600 text-white"
+                    >
+                      Submit
+                    </Button>
+
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        setShowWellnessCheck(false);
+                        setSelectedStomach(null);
+                        setSelectedEnergy(null);
+                      }}
+                      className="w-full"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
             {error && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
                 {error}
