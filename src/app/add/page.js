@@ -7,12 +7,32 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 const AddFood = () => {
-  // Add new state variables at the top with other state declarations
+  // Initialize all state variables
+  const [showCamera, setShowCamera] = useState(false);
   const [showWellnessCheck, setShowWellnessCheck] = useState(false);
+  const [photo, setPhoto] = useState(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [results, setResults] = useState(null);
+  const [error, setError] = useState(null);
   const [selectedStomach, setSelectedStomach] = useState(null);
   const [selectedEnergy, setSelectedEnergy] = useState(null);
+  
+  const webcamRef = React.useRef(null);
 
-  // Add new function after other function declarations
+  const handleFileUpload = (file) => {
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image too large. Please choose an image under 5MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPhoto(reader.result);
+      analyzeFood(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const submitWellnessCheck = () => {
     if (!selectedStomach || !selectedEnergy) {
       return;
@@ -34,21 +54,6 @@ const AddFood = () => {
     setShowWellnessCheck(false);
     setSelectedStomach(null);
     setSelectedEnergy(null);
-  };
-  const webcamRef = React.useRef(null);
-
-  const handleFileUpload = (file) => {
-    if (file.size > 5 * 1024 * 1024) {
-      setError('Image too large. Please choose an image under 5MB.');
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPhoto(reader.result);
-      analyzeFood(reader.result);
-    };
-    reader.readAsDataURL(file);
   };
 
   const analyzeFood = async (imageSrc) => {
@@ -80,11 +85,8 @@ const AddFood = () => {
       });
 
       const data = await response.json();
-      console.log('Full API Response:', JSON.stringify(data, null, 2));
-
       if (!response.ok) {
-        const errorMessage = data.error?.message || JSON.stringify(data.error) || 'Unknown error';
-        throw new Error(`API Error: ${errorMessage}`);
+        throw new Error(data.error?.message || 'Analysis failed');
       }
 
       const parsedResults = JSON.parse(data.content[0].text);
@@ -194,6 +196,7 @@ const AddFood = () => {
                 </div>
               </div>
             )}
+
             {error && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
                 {error}
