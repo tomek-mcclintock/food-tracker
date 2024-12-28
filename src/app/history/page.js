@@ -49,6 +49,18 @@ const History = () => {
                           <div>
                             <p><strong>{entry.food}</strong></p>
                             <p className="text-sm">{entry.ingredients}</p>
+                            {entry.sensitivities && entry.sensitivities.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {entry.sensitivities.map((item, index) => (
+                                  <span
+                                    key={index}
+                                    className="px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-xs"
+                                  >
+                                    {item}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         )}
                       </td>

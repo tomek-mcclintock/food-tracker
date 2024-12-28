@@ -71,7 +71,7 @@ const AddFood = () => {
             role: "user",
             content: [{
               type: "text",
-              text: "Analyze this food image carefully. Break down the dish into all its component ingredients, being as specific as possible. For example, if it's a hamburger, list ingredients like 'ground beef', 'wheat bun', etc. Include all ingredients, sauces, and garnishes you can see. Include common ingredients that would be needed to make the dish even if not directly visible (like salt or oil). Return ONLY a JSON object with format {\"mainItem\": \"detailed name of dish\", \"ingredients\": [\"ingredient1\", \"ingredient2\"]}"
+              text: "Analyze this food image" // This text will be replaced in the API route
             }, {
               type: "image",
               source: {
@@ -240,7 +240,7 @@ const AddFood = () => {
               </div>
             )}
 
-                            {photo && (
+            {photo && (
               <div className="space-y-4">
                 <img src={photo} alt="Food" className="w-full rounded-lg" />
                 
@@ -251,7 +251,6 @@ const AddFood = () => {
                 ) : results && (
                   <div className="space-y-4">
                     <div className="bg-gray-50 p-4 rounded-lg">
-                      <h3 className="font-semibold mb-2">Analysis Results:</h3>
                       <p><strong>Food:</strong> {results.mainItem}</p>
                       <p><strong>Ingredients:</strong></p>
                       <ul className="list-disc pl-5">
@@ -259,6 +258,21 @@ const AddFood = () => {
                           <li key={index}>{ingredient}</li>
                         ))}
                       </ul>
+                      {results.sensitivities && results.sensitivities.length > 0 && (
+                        <div className="mt-2">
+                          <p><strong>Contains:</strong></p>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {results.sensitivities.map((item, index) => (
+                              <span
+                                key={index}
+                                className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm"
+                              >
+                                {item}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex flex-col gap-2">
@@ -269,6 +283,7 @@ const AddFood = () => {
                             date: new Date().toLocaleString(),
                             food: results.mainItem,
                             ingredients: results.ingredients.join(", "),
+                            sensitivities: results.sensitivities || [],
                             type: 'food'
                           };
                           
