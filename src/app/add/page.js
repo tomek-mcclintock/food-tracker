@@ -274,9 +274,9 @@ const AddFood = () => {
               </div>
             )}
 
-            {photo && (
+            {(analyzing || results) && (
               <div className="space-y-4">
-                <img src={photo} alt="Food" className="w-full rounded-lg" />
+                {photo && <img src={photo} alt="Food" className="w-full rounded-lg" />}
                 
                 {analyzing ? (
                   <div className="flex items-center justify-center gap-2 text-blue-600">
