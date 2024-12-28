@@ -56,20 +56,23 @@ const AddFood = () => {
   const analyzeFood = async (imageSrc) => {
     setAnalyzing(true);
     setError(null);
+    
     try {
-      const base64Data = imageSrc ? imageSrc.split('base64,')[1] : null;
-      const description = document.getElementById('food-description').value;
+      const description = document.getElementById('food-description').value.trim();
       
-      if (!base64Data && !description) {
+      if (!imageSrc && !description) {
         throw new Error('Please provide an image or description');
       }
 
       const content = [{
         type: "text",
-        text: "Analyze this food. " + (description ? "Additional context: " + description : "")
+        text: description 
+          ? `Analyze this food. Additional context: ${description}`
+          : "Analyze this food."
       }];
 
-      if (base64Data) {
+      if (imageSrc) {
+        const base64Data = imageSrc.split('base64,')[1];
         content.push({
           type: "image",
           source: {
