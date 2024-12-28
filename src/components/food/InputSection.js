@@ -1,4 +1,6 @@
 // src/components/food/InputSection.js
+"use client"
+
 import { PlusCircle, Camera, ImagePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';

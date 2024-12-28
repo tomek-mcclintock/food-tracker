@@ -1,4 +1,6 @@
 // src/hooks/useAnalysis.js
+"use client"
+
 import { useState, useCallback } from 'react';
 
 export function useAnalysis() {

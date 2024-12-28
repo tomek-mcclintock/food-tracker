@@ -1,4 +1,7 @@
 // src/components/food/CameraSection.js
+"use client"
+
+
 import { Camera, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Webcam from 'react-webcam';

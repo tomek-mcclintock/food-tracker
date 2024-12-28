@@ -1,4 +1,6 @@
 // src/components/food/ResultsSection.js
+"use client"
+
 import { useState } from 'react';
 import { Pencil } from 'lucide-react';
 import { Button } from '@/components/ui/button';
