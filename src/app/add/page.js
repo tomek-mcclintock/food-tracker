@@ -40,12 +40,12 @@ const AddFood = () => {
     reader.readAsDataURL(file);
   };
 
-  const handleSave = () => {
+  const handleSave = (resultsToSave) => {
     const newEntry = {
       date: new Date().toLocaleString(),
-      food: results.mainItem,
-      ingredients: results.ingredients.join(", "),
-      sensitivities: results.sensitivities || [],
+      food: resultsToSave.mainItem,
+      ingredients: resultsToSave.ingredients.join(", "),
+      sensitivities: resultsToSave.sensitivities || [],
       type: 'food'
     };
     
