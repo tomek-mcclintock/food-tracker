@@ -1,13 +1,15 @@
+// src/app/add/page.js
 "use client"
 
 import React, { useState } from 'react';
 import Webcam from 'react-webcam';
-import { Camera, X, Loader2 } from 'lucide-react';
+import { Camera, X, Loader2, PlusCircle, Info } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import WellnessCheck from '@/components/WellnessCheck';
 import { useFoodHistory } from '@/hooks/useFoodHistory';
 import { useAnalysis } from '@/hooks/useAnalysis';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const AddFood = () => {
   const [showCamera, setShowCamera] = useState(false);
@@ -16,8 +18,6 @@ const AddFood = () => {
   const [error, setError] = useState(null);
   
   const webcamRef = React.useRef(null);
-
-  // Use our custom hooks
   const { addEntry } = useFoodHistory();
   const { analyzing, results, analyzeFood } = useAnalysis();
 
@@ -26,11 +26,8 @@ const AddFood = () => {
       setError('Image too large. Please choose an image under 5MB.');
       return;
     }
-
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setPhoto(reader.result);
-    };
+    reader.onloadend = () => setPhoto(reader.result);
     reader.readAsDataURL(file);
   };
 
@@ -50,7 +47,6 @@ const AddFood = () => {
       sensitivities: results.sensitivities || [],
       type: 'food'
     };
-    
     addEntry(newEntry);
     setPhoto(null);
     if (document.getElementById('food-description')) {
@@ -59,43 +55,38 @@ const AddFood = () => {
   };
 
   return (
-    <div className="pb-20">
-      <Card>
-        <CardContent className="p-4">
-          <div className="space-y-4">
-            <Button 
-              onClick={() => setShowWellnessCheck(true)}
-              className="w-full bg-green-500 hover:bg-green-600 text-white mb-4"
-            >
-              How I'm Feeling
-            </Button>
+    <div className="max-w-2xl mx-auto pb-20">
+      {/* Wellness Check Button */}
+      <div className="mb-6">
+        <Button 
+          onClick={() => setShowWellnessCheck(true)}
+          variant="outline"
+          size="lg"
+          className="w-full border-2 border-green-500 text-green-600 hover:bg-green-50"
+        >
+          <Info className="w-5 h-5 mr-2" />
+          How am I feeling?
+        </Button>
+      </div>
 
-            {showWellnessCheck && (
-              <WellnessCheck
-                onClose={() => setShowWellnessCheck(false)}
-                onSubmit={(entry) => {
-                  addEntry(entry);
-                  setShowWellnessCheck(false);
-                }}
-              />
-            )}
-
-            {error && (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                {error}
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <textarea
-                id="food-description"
-                placeholder="Describe the food (optional)"
-                className="w-full p-2 border rounded-lg resize-none"
-                rows="2"
-              />
-              
-              {!showCamera && !photo && (
-                <>
+      {/* Main Add Food Card */}
+      <Card className="shadow-lg">
+        <CardContent className="p-6">
+          {/* Input Methods */}
+          {!photo && !analyzing && !results && (
+            <Tabs defaultValue="text" className="w-full">
+              <TabsList className="w-full mb-4">
+                <TabsTrigger value="text" className="flex-1">Enter Text</TabsTrigger>
+                <TabsTrigger value="photo" className="flex-1">Take Photo</TabsTrigger>
+              </TabsList>
+              <TabsContent value="text">
+                <div className="space-y-4">
+                  <textarea
+                    id="food-description"
+                    placeholder="What did you eat? (e.g., 'Grilled chicken salad with avocado')"
+                    className="w-full p-3 border rounded-lg resize-none text-base"
+                    rows="3"
+                  />
                   <Button 
                     onClick={() => {
                       const description = document.getElementById('food-description')?.value?.trim();
@@ -104,104 +95,125 @@ const AddFood = () => {
                         return;
                       }
                       analyzeFood(description, null);
-                    }} 
-                    className="w-full bg-green-500 hover:bg-green-600 text-white"
-                  >
-                    Analyze Description
-                  </Button>
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-gray-300" />
-                    </div>
-                    <div className="relative flex justify-center text-sm">
-                      <span className="px-2 bg-white text-gray-500">or take a photo</span>
-                    </div>
-                  </div>
-                  <Button onClick={() => setShowCamera(true)} className="w-full">
-                    <Camera className="w-4 h-4 mr-2" /> Open Camera
-                  </Button>
-                  <Button 
-                    variant="outline" 
+                    }}
                     className="w-full"
-                    onClick={() => document.getElementById('file-upload').click()}
                   >
-                    Choose from Library
-                  </Button>
-                  <input
-                    id="file-upload"
-                    type="file"
-                    accept="image/jpeg,image/png"
-                    className="hidden"
-                    onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
-                  />
-                </>
-              )}
-            </div>
-
-            {showCamera && (
-              <div className="relative bg-black rounded-lg overflow-hidden">
-                <Webcam
-                  audio={false}
-                  ref={webcamRef}
-                  screenshotFormat="image/jpeg"
-                  videoConstraints={{
-                    facingMode: { exact: "environment" }
-                  }}
-                  className="w-full h-[400px] object-cover"
-                />
-                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4">
-                  <Button onClick={handlePhotoCapture}>Take Photo</Button>
-                  <Button variant="destructive" onClick={() => setShowCamera(false)}>
-                    <X className="w-4 h-4" />
+                    <PlusCircle className="w-4 h-4 mr-2" />
+                    Add Food
                   </Button>
                 </div>
-              </div>
-            )}
+              </TabsContent>
+              <TabsContent value="photo">
+                <div className="space-y-4">
+                  {!showCamera ? (
+                    <div className="space-y-2">
+                      <Button 
+                        onClick={() => setShowCamera(true)} 
+                        className="w-full"
+                      >
+                        <Camera className="w-4 h-4 mr-2" />
+                        Open Camera
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={() => document.getElementById('file-upload').click()}
+                      >
+                        Choose from Library
+                      </Button>
+                      <input
+                        id="file-upload"
+                        type="file"
+                        accept="image/jpeg,image/png"
+                        className="hidden"
+                        onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
+                      />
+                    </div>
+                  ) : (
+                    <div className="relative bg-black rounded-lg overflow-hidden">
+                      <Webcam
+                        audio={false}
+                        ref={webcamRef}
+                        screenshotFormat="image/jpeg"
+                        videoConstraints={{
+                          facingMode: { exact: "environment" }
+                        }}
+                        className="w-full h-[400px] object-cover"
+                      />
+                      <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4">
+                        <Button onClick={handlePhotoCapture}>Take Photo</Button>
+                        <Button variant="destructive" onClick={() => setShowCamera(false)}>
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
+          )}
 
-            {photo && !analyzing && !results && (
-              <div className="space-y-4">
-                <img src={photo} alt="Food" className="w-full rounded-lg" />
-                <div className="flex flex-col gap-2">
+          {/* Photo Review */}
+          {photo && !analyzing && !results && (
+            <div className="space-y-4">
+              <img src={photo} alt="Food" className="w-full rounded-lg shadow" />
+              <div className="space-y-3">
+                <textarea
+                  id="food-description"
+                  placeholder="Add any details about the food (optional)"
+                  className="w-full p-3 border rounded-lg resize-none"
+                  rows="2"
+                />
+                <div className="flex gap-2">
                   <Button 
                     onClick={() => {
                       const description = document.getElementById('food-description')?.value?.trim();
                       analyzeFood(description, photo);
                     }}
-                    className="w-full bg-green-500 hover:bg-green-600 text-white"
+                    className="flex-1"
                   >
-                    Confirm & Analyze Photo
+                    Analyze Photo
                   </Button>
                   <Button 
-                    onClick={() => {
-                      setPhoto(null);
-                    }} 
                     variant="outline"
-                    className="w-full"
+                    onClick={() => setPhoto(null)}
+                    className="flex-1"
                   >
-                    Retake Photo
+                    Retake
                   </Button>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {analyzing ? (
-              <div className="flex items-center justify-center gap-2 text-blue-600">
-                <Loader2 className="w-4 h-4 animate-spin" /> Analyzing...
+          {/* Analysis Results */}
+          {analyzing && (
+            <div className="py-8">
+              <div className="flex flex-col items-center justify-center gap-3 text-blue-600">
+                <Loader2 className="w-8 h-8 animate-spin" />
+                <p className="text-lg">Analyzing your food...</p>
               </div>
-            ) : results && (
-              <div className="space-y-4">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <p><strong>Food:</strong> {results.mainItem}</p>
-                  <p><strong>Ingredients:</strong></p>
-                  <ul className="list-disc pl-5">
-                    {results.ingredients.map((ingredient, index) => (
-                      <li key={index}>{ingredient}</li>
-                    ))}
-                  </ul>
-                  {results.sensitivities && results.sensitivities.length > 0 && (
-                    <div className="mt-2">
-                      <p><strong>Contains:</strong></p>
-                      <div className="flex flex-wrap gap-1 mt-1">
+            </div>
+          )}
+
+          {results && (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold mb-4">{results.mainItem}</h3>
+                <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
+                  <div>
+                    <p className="font-medium mb-2">Ingredients:</p>
+                    <ul className="list-disc pl-5 space-y-1">
+                      {results.ingredients.map((ingredient, index) => (
+                        <li key={index}>{ingredient}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  
+                  {results.sensitivities?.length > 0 && (
+                    <div>
+                      <p className="font-medium mb-2">Contains:</p>
+                      <div className="flex flex-wrap gap-1">
                         {results.sensitivities.map((item, index) => (
                           <span
                             key={index}
@@ -214,33 +226,50 @@ const AddFood = () => {
                     </div>
                   )}
                 </div>
-
-                <div className="flex flex-col gap-2">
-                  <Button 
-                    onClick={handleSave}
-                    className="w-full bg-green-500 hover:bg-green-600 text-white"
-                  >
-                    Confirm & Save
-                  </Button>
-
-                  <Button 
-                    onClick={() => {
-                      setPhoto(null);
-                      if (document.getElementById('food-description')) {
-                        document.getElementById('food-description').value = '';
-                      }
-                    }} 
-                    variant="outline"
-                    className="w-full"
-                  >
-                    Take New Photo
-                  </Button>
-                </div>
               </div>
-            )}
-          </div>
+
+              <div className="flex gap-2 pt-2">
+                <Button 
+                  onClick={handleSave}
+                  className="flex-1"
+                >
+                  Save Entry
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    setPhoto(null);
+                    if (document.getElementById('food-description')) {
+                      document.getElementById('food-description').value = '';
+                    }
+                  }}
+                  className="flex-1"
+                >
+                  Start Over
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Error Display */}
+          {error && (
+            <div className="mt-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
+              {error}
+            </div>
+          )}
         </CardContent>
       </Card>
+
+      {/* Wellness Check Modal */}
+      {showWellnessCheck && (
+        <WellnessCheck
+          onClose={() => setShowWellnessCheck(false)}
+          onSubmit={(entry) => {
+            addEntry(entry);
+            setShowWellnessCheck(false);
+          }}
+        />
+      )}
     </div>
   );
 };
