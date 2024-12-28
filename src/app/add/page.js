@@ -1,3 +1,4 @@
+// src/app/add/page.js
 "use client"
 
 import React, { useState } from 'react';
@@ -5,111 +6,64 @@ import Webcam from 'react-webcam';
 import { Camera, X, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import WellnessCheck from '@/components/WellnessCheck';
+import { useFoodHistory } from '@/hooks/useFoodHistory';
+import { useAnalysis } from '@/hooks/useAnalysis';
 
 const AddFood = () => {
   const [showCamera, setShowCamera] = useState(false);
   const [showWellnessCheck, setShowWellnessCheck] = useState(false);
   const [photo, setPhoto] = useState(null);
-  const [analyzing, setAnalyzing] = useState(false);
-  const [results, setResults] = useState(null);
-  const [error, setError] = useState(null);
-  const [selectedStomach, setSelectedStomach] = useState(null);
-  const [selectedEnergy, setSelectedEnergy] = useState(null);
-  
   const webcamRef = React.useRef(null);
+
+  // Use our custom hooks
+  const { addEntry } = useFoodHistory();
+  const { analyzing, results, error, analyzeFood } = useAnalysis();
 
   const handleFileUpload = (file) => {
     if (file.size > 5 * 1024 * 1024) {
-      setError('Image too large. Please choose an image under 5MB.');
+      throw new Error('Image too large. Please choose an image under 5MB.');
       return;
     }
 
     const reader = new FileReader();
     reader.onloadend = () => {
       setPhoto(reader.result);
-      analyzeFood(reader.result);
+      const description = document.getElementById('food-description')?.value?.trim();
+      analyzeFood(description, reader.result);
     };
     reader.readAsDataURL(file);
   };
 
-  const submitWellnessCheck = () => {
-    if (!selectedStomach || !selectedEnergy) {
-      return;
-    }
-
-    const wellnessEntry = {
-      date: new Date().toLocaleString(),
-      type: 'wellness',
-      stomach: selectedStomach,
-      energy: selectedEnergy
-    };
-    
-    const history = JSON.parse(localStorage.getItem('foodHistory') || '[]');
-    history.unshift(wellnessEntry);
-    localStorage.setItem('foodHistory', JSON.stringify(history));
-    
-    setShowWellnessCheck(false);
-    setSelectedStomach(null);
-    setSelectedEnergy(null);
+  const handleDescriptionAnalysis = () => {
+    const description = document.getElementById('food-description')?.value?.trim();
+    if (!description) return;
+    analyzeFood(description, null);
   };
 
-  const analyzeFood = async (imageSrc) => {
-    setAnalyzing(true);
-    setError(null);
-    
-    try {
+  const handlePhotoCapture = () => {
+    const imageSrc = webcamRef.current?.getScreenshot();
+    if (imageSrc) {
+      setPhoto(imageSrc);
+      setShowCamera(false);
       const description = document.getElementById('food-description')?.value?.trim();
-      
-      if (!imageSrc && !description) {
-        throw new Error('Please provide an image or description');
-      }
+      analyzeFood(description, imageSrc);
+    }
+  };
 
-      const content = [{
-        type: "text",
-        text: description 
-          ? `Analyze this food: ${description}`
-          : "Analyze this food."
-      }];
-
-      if (imageSrc) {
-        const base64Data = imageSrc.split('base64,')[1];
-        content.push({
-          type: "image",
-          source: {
-            type: "base64",
-            media_type: "image/jpeg",
-            data: base64Data
-          }
-        });
-      }
-
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: "claude-3-haiku-20240307",
-          max_tokens: 1024,
-          messages: [{
-            role: "user",
-            content: content
-          }]
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || 'Analysis failed');
-      }
-
-      const data = await response.json();
-      const parsedResults = JSON.parse(data.content[0].text);
-      setResults(parsedResults);
-
-    } catch (err) {
-      console.error('Error in analyzeFood:', err);
-      setError(err.message);
-    } finally {
-      setAnalyzing(false);
+  const handleSave = () => {
+    const newEntry = {
+      date: new Date().toLocaleString(),
+      food: results.mainItem,
+      ingredients: results.ingredients.join(", "),
+      sensitivities: results.sensitivities || [],
+      type: 'food'
+    };
+    
+    addEntry(newEntry);
+    setPhoto(null);
+    if (document.getElementById('food-description')) {
+      document.getElementById('food-description').value = '';
     }
   };
 
@@ -126,77 +80,13 @@ const AddFood = () => {
             </Button>
 
             {showWellnessCheck && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                <div className="bg-white rounded-lg p-6 max-w-md w-full">
-                  <h2 className="text-xl font-bold mb-4">How are you feeling?</h2>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <p className="font-medium mb-2">Stomach Comfort:</p>
-                      <div className="grid grid-cols-5 gap-2">
-                        {[
-                          'Very Poor',
-                          'Poor',
-                          'Okay',
-                          'Good',
-                          'Excellent'
-                        ].map(rating => (
-                          <Button
-                            key={rating}
-                            variant={selectedStomach === rating ? "default" : "outline"}
-                            onClick={() => setSelectedStomach(rating)}
-                            className="w-full text-sm"
-                          >
-                            {rating}
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="font-medium mb-2">Energy Levels:</p>
-                      <div className="grid grid-cols-5 gap-2">
-                        {[
-                          'Very Low',
-                          'Low',
-                          'Moderate',
-                          'High',
-                          'Very High'
-                        ].map(rating => (
-                          <Button
-                            key={rating}
-                            variant={selectedEnergy === rating ? "default" : "outline"}
-                            onClick={() => setSelectedEnergy(rating)}
-                            className="w-full text-sm"
-                          >
-                            {rating}
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <Button 
-                      onClick={submitWellnessCheck}
-                      disabled={!selectedStomach || !selectedEnergy}
-                      className="w-full bg-green-500 hover:bg-green-600 text-white"
-                    >
-                      Submit
-                    </Button>
-
-                    <Button 
-                      variant="outline" 
-                      onClick={() => {
-                        setShowWellnessCheck(false);
-                        setSelectedStomach(null);
-                        setSelectedEnergy(null);
-                      }}
-                      className="w-full"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              </div>
+              <WellnessCheck 
+                onClose={() => setShowWellnessCheck(false)}
+                onSubmit={(entry) => {
+                  addEntry(entry);
+                  setShowWellnessCheck(false);
+                }}
+              />
             )}
 
             {error && (
@@ -215,7 +105,10 @@ const AddFood = () => {
               
               {!showCamera && !photo && (
                 <>
-                  <Button onClick={() => analyzeFood(null)} className="w-full bg-green-500 hover:bg-green-600 text-white">
+                  <Button 
+                    onClick={handleDescriptionAnalysis} 
+                    className="w-full bg-green-500 hover:bg-green-600 text-white"
+                  >
                     Analyze Description
                   </Button>
                   <div className="relative">
@@ -259,14 +152,7 @@ const AddFood = () => {
                   className="w-full h-[400px] object-cover"
                 />
                 <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4">
-                  <Button onClick={() => {
-                    const imageSrc = webcamRef.current?.getScreenshot();
-                    if (imageSrc) {
-                      setPhoto(imageSrc);
-                      setShowCamera(false);
-                      analyzeFood(imageSrc);
-                    }
-                  }}>Take Photo</Button>
+                  <Button onClick={handlePhotoCapture}>Take Photo</Button>
                   <Button variant="destructive" onClick={() => setShowCamera(false)}>
                     <X className="w-4 h-4" />
                   </Button>
@@ -311,29 +197,17 @@ const AddFood = () => {
 
                     <div className="flex flex-col gap-2">
                       <Button 
-                        onClick={() => {
-                          const newEntry = {
-                            date: new Date().toLocaleString(),
-                            food: results.mainItem,
-                            ingredients: results.ingredients.join(", "),
-                            sensitivities: results.sensitivities || [],
-                            type: 'food'
-                          };
-                          
-                          const history = JSON.parse(localStorage.getItem('foodHistory') || '[]');
-                          history.unshift(newEntry);
-                          localStorage.setItem('foodHistory', JSON.stringify(history));
-
-                          setPhoto(null);
-                          setResults(null);
-                        }} 
+                        onClick={handleSave}
                         className="w-full bg-green-500 hover:bg-green-600 text-white"
                       >
                         Confirm & Save
                       </Button>
 
                       <Button 
-                        onClick={() => analyzeFood(photo)}
+                        onClick={() => analyzeFood(
+                          document.getElementById('food-description')?.value?.trim(),
+                          photo
+                        )}
                         variant="outline"
                         className="w-full"
                       >
@@ -343,7 +217,9 @@ const AddFood = () => {
                       <Button 
                         onClick={() => {
                           setPhoto(null);
-                          setResults(null);
+                          if (document.getElementById('food-description')) {
+                            document.getElementById('food-description').value = '';
+                          }
                         }} 
                         variant="outline"
                         className="w-full"
