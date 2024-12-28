@@ -1,4 +1,6 @@
 // src/components/history/DaySummary.js
+"use client"
+
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowUp, Heart, Pencil, Trash2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
