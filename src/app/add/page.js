@@ -5,18 +5,21 @@ import Webcam from 'react-webcam';
 import { Camera, X, Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import WellnessCheck from '@/components/WellnessCheck';
+import { useFoodHistory } from '@/hooks/useFoodHistory';
+import { useAnalysis } from '@/hooks/useAnalysis';
 
 const AddFood = () => {
   const [showCamera, setShowCamera] = useState(false);
   const [showWellnessCheck, setShowWellnessCheck] = useState(false);
   const [photo, setPhoto] = useState(null);
-  const [analyzing, setAnalyzing] = useState(false);
-  const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
-  const [selectedStomach, setSelectedStomach] = useState(null);
-  const [selectedEnergy, setSelectedEnergy] = useState(null);
   
   const webcamRef = React.useRef(null);
+
+  // Use our custom hooks
+  const { addEntry } = useFoodHistory();
+  const { analyzing, results, analyzeFood } = useAnalysis();
 
   const handleFileUpload = (file) => {
     if (file.size > 5 * 1024 * 1024) {
@@ -39,78 +42,19 @@ const AddFood = () => {
     }
   };
 
-  const submitWellnessCheck = () => {
-    if (!selectedStomach || !selectedEnergy) {
-      return;
-    }
-
-    const wellnessEntry = {
+  const handleSave = () => {
+    const newEntry = {
       date: new Date().toLocaleString(),
-      type: 'wellness',
-      stomach: selectedStomach,
-      energy: selectedEnergy
+      food: results.mainItem,
+      ingredients: results.ingredients.join(", "),
+      sensitivities: results.sensitivities || [],
+      type: 'food'
     };
     
-    const history = JSON.parse(localStorage.getItem('foodHistory') || '[]');
-    history.unshift(wellnessEntry);
-    localStorage.setItem('foodHistory', JSON.stringify(history));
-    
-    setShowWellnessCheck(false);
-    setSelectedStomach(null);
-    setSelectedEnergy(null);
-  };
-
-  const analyzeFood = async (description, imageSrc) => {
-    setAnalyzing(true);
-    setError(null);
-    
-    try {
-      const content = [{
-        type: "text",
-        text: description 
-          ? `Analyze this food: ${description}`
-          : "Analyze this food."
-      }];
-
-      if (imageSrc) {
-        const base64Data = imageSrc.split('base64,')[1];
-        content.push({
-          type: "image",
-          source: {
-            type: "base64",
-            media_type: "image/jpeg",
-            data: base64Data
-          }
-        });
-      }
-
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: "claude-3-haiku-20240307",
-          max_tokens: 1024,
-          messages: [{
-            role: "user",
-            content: content
-          }]
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || 'Analysis failed');
-      }
-
-      const data = await response.json();
-      const parsedResults = JSON.parse(data.content[0].text);
-      setResults(parsedResults);
-
-    } catch (err) {
-      console.error('Error in analyzeFood:', err);
-      setError(err.message);
-    } finally {
-      setAnalyzing(false);
+    addEntry(newEntry);
+    setPhoto(null);
+    if (document.getElementById('food-description')) {
+      document.getElementById('food-description').value = '';
     }
   };
 
@@ -127,77 +71,13 @@ const AddFood = () => {
             </Button>
 
             {showWellnessCheck && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                <div className="bg-white rounded-lg p-6 max-w-md w-full">
-                  <h2 className="text-xl font-bold mb-4">How are you feeling?</h2>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <p className="font-medium mb-2">Stomach Comfort:</p>
-                      <div className="grid grid-cols-5 gap-2">
-                        {[
-                          'Very Poor',
-                          'Poor',
-                          'Okay',
-                          'Good',
-                          'Excellent'
-                        ].map(rating => (
-                          <Button
-                            key={rating}
-                            variant={selectedStomach === rating ? "default" : "outline"}
-                            onClick={() => setSelectedStomach(rating)}
-                            className="w-full text-sm"
-                          >
-                            {rating}
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="font-medium mb-2">Energy Levels:</p>
-                      <div className="grid grid-cols-5 gap-2">
-                        {[
-                          'Very Low',
-                          'Low',
-                          'Moderate',
-                          'High',
-                          'Very High'
-                        ].map(rating => (
-                          <Button
-                            key={rating}
-                            variant={selectedEnergy === rating ? "default" : "outline"}
-                            onClick={() => setSelectedEnergy(rating)}
-                            className="w-full text-sm"
-                          >
-                            {rating}
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <Button 
-                      onClick={submitWellnessCheck}
-                      disabled={!selectedStomach || !selectedEnergy}
-                      className="w-full bg-green-500 hover:bg-green-600 text-white"
-                    >
-                      Submit
-                    </Button>
-
-                    <Button 
-                      variant="outline" 
-                      onClick={() => {
-                        setShowWellnessCheck(false);
-                        setSelectedStomach(null);
-                        setSelectedEnergy(null);
-                      }}
-                      className="w-full"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              </div>
+              <WellnessCheck
+                onClose={() => setShowWellnessCheck(false)}
+                onSubmit={(entry) => {
+                  addEntry(entry);
+                  setShowWellnessCheck(false);
+                }}
+              />
             )}
 
             {error && (
@@ -337,25 +217,7 @@ const AddFood = () => {
 
                 <div className="flex flex-col gap-2">
                   <Button 
-                    onClick={() => {
-                      const newEntry = {
-                        date: new Date().toLocaleString(),
-                        food: results.mainItem,
-                        ingredients: results.ingredients.join(", "),
-                        sensitivities: results.sensitivities || [],
-                        type: 'food'
-                      };
-                      
-                      const history = JSON.parse(localStorage.getItem('foodHistory') || '[]');
-                      history.unshift(newEntry);
-                      localStorage.setItem('foodHistory', JSON.stringify(history));
-
-                      setPhoto(null);
-                      setResults(null);
-                      if (document.getElementById('food-description')) {
-                        document.getElementById('food-description').value = '';
-                      }
-                    }} 
+                    onClick={handleSave}
                     className="w-full bg-green-500 hover:bg-green-600 text-white"
                   >
                     Confirm & Save
@@ -364,7 +226,6 @@ const AddFood = () => {
                   <Button 
                     onClick={() => {
                       setPhoto(null);
-                      setResults(null);
                       if (document.getElementById('food-description')) {
                         document.getElementById('food-description').value = '';
                       }
