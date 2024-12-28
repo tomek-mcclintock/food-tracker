@@ -7,14 +7,28 @@ import DaySummary from '@/components/history/DaySummary';
 import EditEntry from '@/components/history/EditEntry';
 
 const groupEntriesByDay = (entries) => {
-  if (!Array.isArray(entries)) return [];  // Add this check
+  if (!Array.isArray(entries)) return [];
   
   const dayMap = new Map();
 
   entries.forEach(entry => {
-    if (!entry || !entry.date) return;  // Add this safety check
+    if (!entry || !entry.date) return;
 
-    const entryDate = new Date(entry.date);
+    // Safely parse the date
+    let entryDate;
+    try {
+      entryDate = new Date(entry.date);
+      // Check if date is valid
+      if (isNaN(entryDate.getTime())) {
+        console.error('Invalid date:', entry.date);
+        return;
+      }
+    } catch (e) {
+      console.error('Error parsing date:', entry.date);
+      return;
+    }
+
+    // Format the date for display
     const dateKey = entryDate.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
@@ -22,9 +36,11 @@ const groupEntriesByDay = (entries) => {
       day: 'numeric'
     });
 
+    // Initialize the day entry if it doesn't exist
     if (!dayMap.has(dateKey)) {
       dayMap.set(dateKey, {
         date: dateKey,
+        dateObj: entryDate, // Store the date object for sorting
         wellness: null,
         foods: []
       });
@@ -36,14 +52,15 @@ const groupEntriesByDay = (entries) => {
       if (!dayData.wellness || new Date(entry.date) > new Date(dayData.wellness.date)) {
         dayData.wellness = { ...entry };
       }
-    } else if (entry.type === 'food') {  // Add explicit check for food type
+    } else if (entry.type === 'food') {
       dayData.foods.push({ ...entry });
     }
   });
 
+  // Sort by date in descending order
   return Array.from(dayMap.values())
-    .sort((a, b) => new Date(b.date) - new Date(a.date));
-};
+    .sort((a, b) => b.dateObj - a.dateObj);
+}
 
 export default function History() {
   const { history, editEntry, deleteEntry } = useFoodHistory();
