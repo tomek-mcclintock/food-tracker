@@ -7,7 +7,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 const AddFood = () => {
-  // Initialize all state variables
   const [showCamera, setShowCamera] = useState(false);
   const [showWellnessCheck, setShowWellnessCheck] = useState(false);
   const [photo, setPhoto] = useState(null);
@@ -38,7 +37,6 @@ const AddFood = () => {
       return;
     }
 
-    // Add wellness entry to history
     const wellnessEntry = {
       date: new Date().toLocaleString(),
       type: 'wellness',
@@ -46,7 +44,6 @@ const AddFood = () => {
       energy: selectedEnergy
     };
     
-    // Save to localStorage
     const history = JSON.parse(localStorage.getItem('foodHistory') || '[]');
     history.unshift(wellnessEntry);
     localStorage.setItem('foodHistory', JSON.stringify(history));
@@ -60,7 +57,29 @@ const AddFood = () => {
     setAnalyzing(true);
     setError(null);
     try {
-      const base64Data = imageSrc.split('base64,')[1];
+      const base64Data = imageSrc ? imageSrc.split('base64,')[1] : null;
+      const description = document.getElementById('food-description').value;
+      
+      if (!base64Data && !description) {
+        throw new Error('Please provide an image or description');
+      }
+
+      const content = [{
+        type: "text",
+        text: "Analyze this food. " + (description ? "Additional context: " + description : "")
+      }];
+
+      if (base64Data) {
+        content.push({
+          type: "image",
+          source: {
+            type: "base64",
+            media_type: "image/jpeg",
+            data: base64Data
+          }
+        });
+      }
+
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -69,17 +88,7 @@ const AddFood = () => {
           max_tokens: 1024,
           messages: [{
             role: "user",
-            content: [{
-              type: "text",
-              text: "Analyze this food image" // This text will be replaced in the API route
-            }, {
-              type: "image",
-              source: {
-                type: "base64",
-                media_type: "image/jpeg",
-                data: base64Data
-              }
-            }]
+            content: content
           }]
         })
       });
@@ -191,27 +200,47 @@ const AddFood = () => {
               </div>
             )}
 
-            {!showCamera && !photo && (
-              <div className="space-y-2">
-                <Button onClick={() => setShowCamera(true)} className="w-full">
-                  <Camera className="w-4 h-4 mr-2" /> Open Camera
-                </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => document.getElementById('file-upload').click()}
-                >
-                  Choose from Library
-                </Button>
-                <input
-                  id="file-upload"
-                  type="file"
-                  accept="image/jpeg,image/png"
-                  className="hidden"
-                  onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
-                />
-              </div>
-            )}
+            <div className="space-y-2">
+              <textarea
+                id="food-description"
+                placeholder="Describe the food (optional)"
+                className="w-full p-2 border rounded-lg resize-none"
+                rows="2"
+              />
+              
+              {!showCamera && !photo && (
+                <>
+                  <Button onClick={() => analyzeFood(null)} className="w-full bg-green-500 hover:bg-green-600 text-white">
+                    Analyze Description
+                  </Button>
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-300" />
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-2 bg-white text-gray-500">or take a photo</span>
+                    </div>
+                  </div>
+                  <Button onClick={() => setShowCamera(true)} className="w-full">
+                    <Camera className="w-4 h-4 mr-2" /> Open Camera
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => document.getElementById('file-upload').click()}
+                  >
+                    Choose from Library
+                  </Button>
+                  <input
+                    id="file-upload"
+                    type="file"
+                    accept="image/jpeg,image/png"
+                    className="hidden"
+                    onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
+                  />
+                </>
+              )}
+            </div>
 
             {showCamera && (
               <div className="relative bg-black rounded-lg overflow-hidden">
@@ -278,7 +307,6 @@ const AddFood = () => {
                     <div className="flex flex-col gap-2">
                       <Button 
                         onClick={() => {
-                          // Save to localStorage
                           const newEntry = {
                             date: new Date().toLocaleString(),
                             food: results.mainItem,
@@ -291,7 +319,6 @@ const AddFood = () => {
                           history.unshift(newEntry);
                           localStorage.setItem('foodHistory', JSON.stringify(history));
 
-                          // Reset the form
                           setPhoto(null);
                           setResults(null);
                         }} 

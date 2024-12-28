@@ -3,10 +3,24 @@ import { NextResponse } from 'next/server';
 export async function POST(request) {
   try {
     const body = await request.json();
-    console.log('Request received, body size:', JSON.stringify(body).length);
+    
+    const originalText = body.messages[0].content[0].text;
+    
+    body.messages[0].content[0].text = `${originalText}
 
-    // Update the prompt in the request body
-    body.messages[0].content[0].text = "Analyze this food image carefully and return a JSON object with three properties:\n1. mainItem: detailed name of the dish\n2. ingredients: list of all ingredients you can see or that would typically be used (including basics like salt, oil)\n3. sensitivities: list of common food sensitivities present in this dish. Include ONLY these categories if present: dairy, gluten, nuts, soy, eggs, fish, shellfish, spicy, citrus, nightshades\n\nExample format: {\"mainItem\": \"Spicy Shrimp Pad Thai\", \"ingredients\": [\"rice noodles\", \"shrimp\", \"eggs\", \"peanuts\", ...], \"sensitivities\": [\"shellfish\", \"eggs\", \"nuts\", \"spicy\"]}";
+Analyze this food carefully and thoroughly. List all ingredients that:
+1. You can visually identify in the food
+2. Would typically be used in this dish's preparation
+3. Are basic cooking ingredients like salt, oil, or seasonings
+
+Return a JSON object with exactly this format:
+{
+  "mainItem": "detailed name of the dish",
+  "ingredients": ["ingredient1", "ingredient2", ...],
+  "sensitivities": ["dairy", "gluten", "nuts", "soy", "eggs", "fish", "shellfish", "spicy", "citrus", "nightshades"]
+}
+
+Include sensitivities only if they are present in the dish. Be thorough with ingredients but only include relevant sensitivities.`;
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
