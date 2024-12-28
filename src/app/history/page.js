@@ -1,133 +1,121 @@
-// src/components/history/EditEntry.js
+// src/app/history/page.js
 "use client"
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useFoodHistory } from '@/hooks/useFoodHistory';
+import DaySummary from '@/components/history/DaySummary';
+import EditEntry from '@/components/history/EditEntry';
 
-export default function EditEntry({ entry, onSave, onClose }) {
-  const [formData, setFormData] = useState(entry);
+const groupEntriesByDay = (entries) => {
+  if (!Array.isArray(entries)) return [];  // Add this check
+  
+  const dayMap = new Map();
 
-  if (entry.type === 'wellness') {
+  entries.forEach(entry => {
+    if (!entry || !entry.date) return;  // Add this safety check
+
+    const entryDate = new Date(entry.date);
+    const dateKey = entryDate.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+
+    if (!dayMap.has(dateKey)) {
+      dayMap.set(dateKey, {
+        date: dateKey,
+        wellness: null,
+        foods: []
+      });
+    }
+
+    const dayData = dayMap.get(dateKey);
+
+    if (entry.type === 'wellness') {
+      if (!dayData.wellness || new Date(entry.date) > new Date(dayData.wellness.date)) {
+        dayData.wellness = { ...entry };
+      }
+    } else if (entry.type === 'food') {  // Add explicit check for food type
+      dayData.foods.push({ ...entry });
+    }
+  });
+
+  return Array.from(dayMap.values())
+    .sort((a, b) => new Date(b.date) - new Date(a.date));
+};
+
+export default function History() {
+  const { history, editEntry, deleteEntry } = useFoodHistory();
+  const [groupedEntries, setGroupedEntries] = useState([]);
+  const [editingEntry, setEditingEntry] = useState(null);
+
+  useEffect(() => {
+    if (history) {  // Add this check
+      setGroupedEntries(groupEntriesByDay(history));
+    }
+  }, [history]);
+
+  const handleSave = (updatedEntry) => {
+    if (!editingEntry) return;  // Add this safety check
+    
+    const index = history.findIndex(entry => 
+      entry.date === editingEntry.date && entry.type === editingEntry.type
+    );
+    if (index !== -1) {
+      editEntry(index, { ...updatedEntry, date: editingEntry.date });
+    }
+    setEditingEntry(null);
+  };
+
+  // Add loading state
+  if (!history) {
     return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-        <div className="bg-white rounded-xl p-6 w-full max-w-md">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Edit Wellness Check</h2>
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <p className="font-medium mb-2">Stomach Comfort:</p>
-              <div className="grid grid-cols-5 gap-2">
-                {['Very Poor', 'Poor', 'Okay', 'Good', 'Excellent'].map(rating => (
-                  <Button
-                    key={rating}
-                    variant={formData.stomach === rating ? "default" : "outline"}
-                    onClick={() => setFormData({...formData, stomach: rating})}
-                    className="w-full text-sm"
-                  >
-                    {rating}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <p className="font-medium mb-2">Energy Level:</p>
-              <div className="grid grid-cols-5 gap-2">
-                {['Very Low', 'Low', 'Moderate', 'High', 'Very High'].map(rating => (
-                  <Button
-                    key={rating}
-                    variant={formData.energy === rating ? "default" : "outline"}
-                    onClick={() => setFormData({...formData, energy: rating})}
-                    className="w-full text-sm"
-                  >
-                    {rating}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            <Button 
-              onClick={() => onSave(formData)}
-              className="w-full bg-green-500 hover:bg-green-600 text-white"
-            >
-              Save Changes
-            </Button>
-          </div>
+      <div className="max-w-2xl mx-auto pb-24 px-4">
+        <div className="text-center py-12 text-gray-500">
+          <p>Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl p-6 w-full max-w-md">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Edit Food Entry</h2>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
+    <div className="max-w-2xl mx-auto pb-24 px-4">
+      <div className="space-y-2">
+        {groupedEntries.map((dayData, index) => (
+          <DaySummary
+            key={index}
+            date={dayData.date}
+            wellness={dayData.wellness}
+            foods={dayData.foods || []}  // Add default empty array
+            onEditWellness={() => dayData.wellness && setEditingEntry(dayData.wellness)}
+            onEditFood={(food) => food && setEditingEntry(food)}
+            onDeleteFood={(food) => {
+              if (!food) return;  // Add safety check
+              const index = history.findIndex(entry => 
+                entry.date === food.date && entry.food === food.food
+              );
+              if (index !== -1) {
+                deleteEntry(index);
+              }
+            }}
+          />
+        ))}
 
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-600 mb-2">Food Name</label>
-            <input
-              type="text"
-              value={formData.food}
-              onChange={(e) => setFormData({...formData, food: e.target.value})}
-              className="w-full p-3 border rounded-xl"
-            />
+        {(!groupedEntries || groupedEntries.length === 0) && (
+          <div className="text-center py-12 text-gray-500">
+            <p>No entries yet</p>
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-600 mb-2">Ingredients</label>
-            <textarea
-              value={formData.ingredients}
-              onChange={(e) => setFormData({...formData, ingredients: e.target.value})}
-              className="w-full p-3 border rounded-xl"
-              rows="3"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-600 mb-2">Sensitivities</label>
-            <div className="flex flex-wrap gap-2">
-              {['dairy', 'gluten', 'nuts', 'soy', 'eggs', 'fish', 'shellfish', 'spicy', 'citrus', 'nightshades'].map((item) => (
-                <button
-                  key={item}
-                  onClick={() => {
-                    const currentSensitivities = formData.sensitivities || [];
-                    const newSensitivities = currentSensitivities.includes(item)
-                      ? currentSensitivities.filter(s => s !== item)
-                      : [...currentSensitivities, item];
-                    setFormData({...formData, sensitivities: newSensitivities});
-                  }}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium ${
-                    (formData.sensitivities || []).includes(item)
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-gray-100 text-gray-600'
-                  }`}
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <Button 
-            onClick={() => onSave(formData)}
-            className="w-full bg-green-500 hover:bg-green-600 text-white"
-          >
-            Save Changes
-          </Button>
-        </div>
+        )}
       </div>
+
+      {editingEntry && (
+        <EditEntry
+          entry={editingEntry}
+          onSave={handleSave}
+          onClose={() => setEditingEntry(null)}
+        />
+      )}
     </div>
   );
 }
