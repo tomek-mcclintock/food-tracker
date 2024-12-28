@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useFoodHistory } from '@/hooks/useFoodHistory';
-import DaySummary from '@/components/history/DaySummary';
+import DaySection from '@/components/history/DaySection';
 import EditEntry from '@/components/history/EditEntry';
 
 const groupEntriesByDay = (entries) => {
@@ -14,33 +14,13 @@ const groupEntriesByDay = (entries) => {
   entries.forEach(entry => {
     if (!entry || !entry.date) return;
 
-    // Safely parse the date
-    let entryDate;
-    try {
-      entryDate = new Date(entry.date);
-      // Check if date is valid
-      if (isNaN(entryDate.getTime())) {
-        console.error('Invalid date:', entry.date);
-        return;
-      }
-    } catch (e) {
-      console.error('Error parsing date:', entry.date);
-      return;
-    }
+    // Get just the date part for grouping
+    const entryDate = new Date(entry.date);
+    const dateKey = entryDate.toISOString().split('T')[0];
 
-    // Format the date for display
-    const dateKey = entryDate.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-
-    // Initialize the day entry if it doesn't exist
     if (!dayMap.has(dateKey)) {
       dayMap.set(dateKey, {
-        date: dateKey,
-        dateObj: entryDate, // Store the date object for sorting
+        date: entryDate,
         wellness: null,
         foods: []
       });
@@ -53,14 +33,21 @@ const groupEntriesByDay = (entries) => {
         dayData.wellness = { ...entry };
       }
     } else if (entry.type === 'food') {
+      // If mealType isn't set, guess based on time
+      if (!entry.mealType) {
+        const hour = entryDate.getHours();
+        if (hour < 11) entry.mealType = 'Breakfast';
+        else if (hour < 15) entry.mealType = 'Lunch';
+        else if (hour < 20) entry.mealType = 'Dinner';
+        else entry.mealType = 'Snack';
+      }
       dayData.foods.push({ ...entry });
     }
   });
 
-  // Sort by date in descending order
   return Array.from(dayMap.values())
-    .sort((a, b) => b.dateObj - a.dateObj);
-}
+    .sort((a, b) => b.date - a.date);
+};
 
 export default function History() {
   const { history, editEntry, deleteEntry } = useFoodHistory();
@@ -68,13 +55,13 @@ export default function History() {
   const [editingEntry, setEditingEntry] = useState(null);
 
   useEffect(() => {
-    if (history) {  // Add this check
+    if (history) {
       setGroupedEntries(groupEntriesByDay(history));
     }
   }, [history]);
 
   const handleSave = (updatedEntry) => {
-    if (!editingEntry) return;  // Add this safety check
+    if (!editingEntry) return;
     
     const index = history.findIndex(entry => 
       entry.date === editingEntry.date && entry.type === editingEntry.type
@@ -85,7 +72,6 @@ export default function History() {
     setEditingEntry(null);
   };
 
-  // Add loading state
   if (!history) {
     return (
       <div className="max-w-2xl mx-auto pb-24 px-4">
@@ -100,15 +86,14 @@ export default function History() {
     <div className="max-w-2xl mx-auto pb-24 px-4">
       <div className="space-y-2">
         {groupedEntries.map((dayData, index) => (
-          <DaySummary
-            key={index}
+          <DaySection
+            key={dayData.date.toISOString()}
             date={dayData.date}
             wellness={dayData.wellness}
-            foods={dayData.foods || []}  // Add default empty array
-            onEditWellness={() => dayData.wellness && setEditingEntry(dayData.wellness)}
-            onEditFood={(food) => food && setEditingEntry(food)}
+            foods={dayData.foods}
+            onEditWellness={() => setEditingEntry(dayData.wellness)}
+            onEditFood={(food) => setEditingEntry(food)}
             onDeleteFood={(food) => {
-              if (!food) return;  // Add safety check
               const index = history.findIndex(entry => 
                 entry.date === food.date && entry.food === food.food
               );

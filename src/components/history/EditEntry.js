@@ -1,4 +1,3 @@
-// src/components/history/EditEntry.js
 "use client"
 
 import { useState } from 'react';
@@ -64,6 +63,13 @@ export default function EditEntry({ entry, onSave, onClose }) {
     );
   }
 
+  const mealTypeColors = {
+    Breakfast: 'text-orange-600 border-orange-200 bg-orange-50',
+    Lunch: 'text-green-600 border-green-200 bg-green-50',
+    Dinner: 'text-blue-600 border-blue-200 bg-blue-50',
+    Snack: 'text-purple-600 border-purple-200 bg-purple-50'
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-xl p-6 w-full max-w-md">
@@ -75,6 +81,25 @@ export default function EditEntry({ entry, onSave, onClose }) {
         </div>
 
         <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-600 mb-2">Meal Type</label>
+            <div className="grid grid-cols-4 gap-2">
+              {['Breakfast', 'Lunch', 'Dinner', 'Snack'].map((type) => (
+                <button
+                  key={type}
+                  onClick={() => setFormData({...formData, mealType: type})}
+                  className={`px-3 py-2 rounded-lg border text-sm font-medium transition-colors
+                    ${formData.mealType === type 
+                      ? mealTypeColors[type]
+                      : 'border-gray-200 hover:bg-gray-50'
+                    }`}
+                >
+                  {type}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-2">Food Name</label>
             <input
