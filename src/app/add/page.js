@@ -58,7 +58,7 @@ const AddFood = () => {
     setError(null);
     
     try {
-      const description = document.getElementById('food-description').value.trim();
+      const description = document.getElementById('food-description')?.value?.trim();
       
       if (!imageSrc && !description) {
         throw new Error('Please provide an image or description');
@@ -67,7 +67,7 @@ const AddFood = () => {
       const content = [{
         type: "text",
         text: description 
-          ? `Analyze this food. Additional context: ${description}`
+          ? `Analyze this food: ${description}`
           : "Analyze this food."
       }];
 
@@ -96,15 +96,17 @@ const AddFood = () => {
         })
       });
 
-      const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error?.message || 'Analysis failed');
+        const errorData = await response.json();
+        throw new Error(errorData.error?.message || 'Analysis failed');
       }
 
+      const data = await response.json();
       const parsedResults = JSON.parse(data.content[0].text);
       setResults(parsedResults);
 
     } catch (err) {
+      console.error('Error in analyzeFood:', err);
       setError(err.message);
     } finally {
       setAnalyzing(false);
