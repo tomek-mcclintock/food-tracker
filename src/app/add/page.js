@@ -1,4 +1,3 @@
-// src/app/add/page.js
 "use client"
 
 import React, { useState } from 'react';
@@ -6,10 +5,10 @@ import Webcam from 'react-webcam';
 import { Camera, X, Loader2, PlusCircle, Info } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import WellnessCheck from '@/components/WellnessCheck';
 import { useFoodHistory } from '@/hooks/useFoodHistory';
 import { useAnalysis } from '@/hooks/useAnalysis';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const AddFood = () => {
   const [showCamera, setShowCamera] = useState(false);
@@ -19,7 +18,15 @@ const AddFood = () => {
   
   const webcamRef = React.useRef(null);
   const { addEntry } = useFoodHistory();
-  const { analyzing, results, analyzeFood } = useAnalysis();
+  const { analyzing, results, analyzeFood, setResults } = useAnalysis();
+
+  const resetForm = () => {
+    setPhoto(null);
+    setResults(null);
+    if (document.getElementById('food-description')) {
+      document.getElementById('food-description').value = '';
+    }
+  };
 
   const handleFileUpload = (file) => {
     if (file.size > 5 * 1024 * 1024) {
@@ -48,10 +55,7 @@ const AddFood = () => {
       type: 'food'
     };
     addEntry(newEntry);
-    setPhoto(null);
-    if (document.getElementById('food-description')) {
-      document.getElementById('food-description').value = '';
-    }
+    resetForm();
   };
 
   return (
@@ -237,12 +241,7 @@ const AddFood = () => {
                 </Button>
                 <Button 
                   variant="outline"
-                  onClick={() => {
-                    setPhoto(null);
-                    if (document.getElementById('food-description')) {
-                      document.getElementById('food-description').value = '';
-                    }
-                  }}
+                  onClick={resetForm}
                   className="flex-1"
                 >
                   Start Over
