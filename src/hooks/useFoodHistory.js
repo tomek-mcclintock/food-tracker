@@ -15,5 +15,18 @@ export function useFoodHistory() {
     setHistory(newHistory);
   }, [history]);
 
-  return { history, addEntry };
+  const editEntry = useCallback((index, updatedEntry) => {
+    const newHistory = [...history];
+    newHistory[index] = updatedEntry;
+    localStorage.setItem('foodHistory', JSON.stringify(newHistory));
+    setHistory(newHistory);
+  }, [history]);
+
+  const deleteEntry = useCallback((index) => {
+    const newHistory = history.filter((_, i) => i !== index);
+    localStorage.setItem('foodHistory', JSON.stringify(newHistory));
+    setHistory(newHistory);
+  }, [history]);
+
+  return { history, addEntry, editEntry, deleteEntry };
 }
