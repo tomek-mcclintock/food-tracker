@@ -5,34 +5,42 @@ import { useFoodHistory } from '@/hooks/useFoodHistory';
 import DaySection from '@/components/history/DaySection';
 import EditEntry from '@/components/history/EditEntry';
 
+// Takes an array of entries and groups them by day
+// Each day contains wellness entries and food entries
 const groupEntriesByDay = (entries) => {
+  // Guard against invalid input
   if (!Array.isArray(entries)) return [];
   
+  // Use a Map to group entries by date
   const dayMap = new Map();
 
   entries.forEach(entry => {
     if (!entry || !entry.date) return;
 
     try {
+      // Convert entry date string to Date object
       const entryDate = new Date(entry.date);
-      if (isNaN(entryDate.getTime())) return;
+      if (isNaN(entryDate.getTime())) return; // Skip invalid dates
       
+      // Create a key for this day (YYYY-MM-DD format)
       const dateKey = entryDate.toISOString().split('T')[0];
 
+      // If this is the first entry for this day, create the day's data structure
       if (!dayMap.has(dateKey)) {
         dayMap.set(dateKey, {
           date: entryDate,
-          wellness: [], // Changed from null to an array
-          foods: []
+          wellness: [], // Array of wellness check-ins
+          foods: []     // Array of food entries
         });
       }
 
       const dayData = dayMap.get(dateKey);
 
+      // Add entry to appropriate array based on type
       if (entry.type === 'wellness') {
-        // Add all wellness entries to the array instead of replacing
         dayData.wellness.push({ ...entry });
       } else if (entry.type === 'food') {
+        // If mealType isn't set, guess based on time of day
         if (!entry.mealType) {
           const hour = entryDate.getHours();
           if (hour < 11) entry.mealType = 'Breakfast';
@@ -47,6 +55,7 @@ const groupEntriesByDay = (entries) => {
     }
   });
 
+  // Convert Map to array and sort by date (newest first)
   return Array.from(dayMap.values())
     .sort((a, b) => b.date - a.date);
 };
@@ -57,6 +66,7 @@ export default function History() {
   const [editingEntry, setEditingEntry] = useState(null);
   const [error, setError] = useState(null);
 
+  // When history changes, regroup the entries by day
   useEffect(() => {
     try {
       if (history) {
@@ -70,11 +80,12 @@ export default function History() {
     }
   }, [history]);
 
+  // Handle saving edited entries
   const handleSave = (updatedEntry) => {
     try {
       if (!editingEntry) return;
       
-      if (editingEntry.id) { // Check if entry has an ID
+      if (editingEntry.id) {
         editEntry(editingEntry.id, updatedEntry);
       }
       setEditingEntry(null);
@@ -84,6 +95,7 @@ export default function History() {
     }
   };
 
+  // Show error state
   if (error) {
     return (
       <div className="max-w-2xl mx-auto pb-24 px-4">
@@ -94,6 +106,7 @@ export default function History() {
     );
   }
 
+  // Show loading state
   if (!history) {
     return (
       <div className="max-w-2xl mx-auto pb-24 px-4">
@@ -137,7 +150,6 @@ export default function History() {
             }}
           />
         ))}
-
 
         {(!groupedEntries || groupedEntries.length === 0) && (
           <div className="text-center py-12 text-gray-500">
