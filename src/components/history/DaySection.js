@@ -1,82 +1,105 @@
-// src/components/history/DaySection.js
 "use client"
 
-import { useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import MealEntry from './MealEntry';
+import { format } from 'date-fns';
+import { Pencil, Trash2, CheckCircle2, Coffee, UtensilsCrossed } from 'lucide-react';
 
-export default function DaySection({ date, wellness, foods, onEditWellness, onEditFood, onDeleteFood }) {
-  const [isExpanded, setIsExpanded] = useState(false);
-  
-  // Format date as "Mon, 8 Dec 2024"
-  const formattedDate = new Date(date).toLocaleDateString('en-US', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric'
-  });
+const MealIcon = ({ mealType }) => {
+  switch (mealType) {
+    case 'Breakfast':
+      return <Coffee className="w-4 h-4 text-orange-500" />;
+    case 'Lunch':
+    case 'Dinner':
+      return <UtensilsCrossed className="w-4 h-4 text-blue-500" />;
+    default:
+      return <Coffee className="w-4 h-4 text-purple-500" />;
+  }
+};
 
-  // Group foods by meal type
-  const mealGroups = {
-    Breakfast: foods.filter(f => f.mealType === 'Breakfast'),
-    Lunch: foods.filter(f => f.mealType === 'Lunch'),
-    Dinner: foods.filter(f => f.mealType === 'Dinner'),
-    Snack: foods.filter(f => f.mealType === 'Snack')
-  };
+const Entry = ({ entry, onEdit, onDelete }) => {
+  const time = format(new Date(entry.date), 'h:mm a');
+
+  if (entry.type === 'wellness') {
+    return (
+      <div className="ml-4 mb-6">
+        <div className="flex items-center gap-2 mb-2">
+          <CheckCircle2 className="w-4 h-4 text-green-500" />
+          <span className="text-sm text-gray-600">{time} Check-in</span>
+          <button
+            onClick={() => onEdit(entry)}
+            className="p-1 hover:bg-gray-100 rounded-full ml-auto"
+          >
+            <Pencil className="w-3.5 h-3.5 text-gray-500" />
+          </button>
+        </div>
+        <div className="ml-6 space-y-1">
+          <p className="text-sm">Stomach: {entry.stomach}</p>
+          <p className="text-sm">Energy: {entry.energy}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <Card className="mb-4">
-      <CardContent className="p-4">
-        <div className="space-y-4">
-          <div 
-            className="flex justify-between items-center cursor-pointer"
-            onClick={() => setIsExpanded(!isExpanded)}
+    <div className="ml-4 mb-6">
+      <div className="flex items-center gap-2 mb-2">
+        <MealIcon mealType={entry.mealType} />
+        <span className="text-sm text-gray-600">{time} {entry.mealType}</span>
+        <div className="ml-auto flex gap-1">
+          <button
+            onClick={() => onEdit(entry)}
+            className="p-1 hover:bg-gray-100 rounded-full"
           >
-            <h3 className="font-semibold text-lg">{formattedDate}</h3>
-            {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-          </div>
-
-          {wellness && (
-            <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
-              <div className="flex gap-4 text-sm">
-                <span className="text-green-600">Stomach: {wellness.stomach}</span>
-                <span className="text-blue-600">Energy: {wellness.energy}</span>
-              </div>
-              <button 
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEditWellness(wellness);
-                }}
-                className="text-gray-500 hover:text-gray-700"
+            <Pencil className="w-3.5 h-3.5 text-gray-500" />
+          </button>
+          <button
+            onClick={() => onDelete(entry)}
+            className="p-1 hover:bg-gray-100 rounded-full"
+          >
+            <Trash2 className="w-3.5 h-3.5 text-gray-500" />
+          </button>
+        </div>
+      </div>
+      <div className="ml-6 space-y-1">
+        <p className="text-sm font-medium">{entry.food}</p>
+        <p className="text-sm text-gray-600">{entry.ingredients}</p>
+        {entry.sensitivities?.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {entry.sensitivities.map((item, index) => (
+              <span
+                key={index}
+                className="px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded-full text-xs"
               >
-                Edit
-              </button>
-            </div>
-          )}
-
-          <div className={`space-y-2 ${isExpanded ? '' : 'hidden'}`}>
-            {Object.entries(mealGroups).map(([mealType, meals]) => (
-              meals.length > 0 && (
-                <div key={mealType}>
-                  <h4 className="font-medium text-sm text-gray-500 mb-2">{mealType}</h4>
-                  <div className="space-y-2">
-                    {meals.map((meal, index) => (
-                      <MealEntry 
-                        key={index}
-                        meal={meal}
-                        mealType={mealType}
-                        onEdit={() => onEditFood(meal)}
-                        onDelete={() => onDeleteFood(meal)}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )
+                {item}
+              </span>
             ))}
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default function DaySection({ date, wellness, foods, onEditWellness, onEditFood, onDeleteFood }) {
+  const formattedDate = format(date, 'EEE d MMM yyyy');
+  
+  // Combine all entries for the day and sort by time
+  const allEntries = [
+    ...(wellness ? [wellness] : []),
+    ...foods
+  ].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  return (
+    <div className="mb-8">
+      <h3 className="font-semibold text-lg mb-4">{formattedDate}</h3>
+      {allEntries.map((entry, index) => (
+        <Entry
+          key={index}
+          entry={entry}
+          onEdit={entry.type === 'wellness' ? onEditWellness : onEditFood}
+          onDelete={entry.type === 'food' ? () => onDeleteFood(entry) : null}
+        />
+      ))}
+      <div className="border-b border-gray-200 mt-6"></div>
+    </div>
   );
 }
