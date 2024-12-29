@@ -49,12 +49,18 @@ const AddFood = () => {
       type: 'food'
     };
     
-    addEntry(newEntry);
-    setShowSaveSuccess(true);
-    setTimeout(() => {
-      setShowSaveSuccess(false);
-      resetForm();
-    }, 1000);
+    const success = addEntry(newEntry);
+    
+    if (success) {
+      setShowSaveSuccess(true);
+      setTimeout(() => {
+        setShowSaveSuccess(false);
+        resetForm();
+      }, 1500); // Increased from 1000 to 1500 to make the feedback more visible
+    } else {
+      setError('Failed to save entry. Please try again.');
+      setTimeout(() => setError(null), 3000);
+    }
   };
 
   const resetForm = () => {

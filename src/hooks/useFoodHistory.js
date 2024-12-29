@@ -21,12 +21,19 @@ export function useFoodHistory() {
 
   const addEntry = useCallback((entry) => {
     try {
+      console.log('Adding entry:', entry); // Debug log
       const currentHistory = JSON.parse(localStorage.getItem('foodHistory') || '[]');
+      console.log('Current history:', currentHistory); // Debug log
       const newHistory = [entry, ...currentHistory];
       localStorage.setItem('foodHistory', JSON.stringify(newHistory));
+      console.log('New history saved:', newHistory); // Debug log
       setHistory(newHistory);
+  
+      // Add immediate visual feedback
+      return true;
     } catch (error) {
       console.error('Error adding entry:', error);
+      return false;
     }
   }, []);
 
