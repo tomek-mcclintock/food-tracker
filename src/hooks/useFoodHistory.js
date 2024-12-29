@@ -1,34 +1,63 @@
-// src/hooks/useFoodHistory.js
 "use client"
 
 import { useState, useEffect, useCallback } from 'react';
 
 export function useFoodHistory() {
   const [history, setHistory] = useState([]);
+  const [initialized, setInitialized] = useState(false);
   
+  // Load initial data
   useEffect(() => {
-    const saved = localStorage.getItem('foodHistory');
-    if (saved) setHistory(JSON.parse(saved));
+    try {
+      const saved = localStorage.getItem('foodHistory');
+      setHistory(saved ? JSON.parse(saved) : []);
+    } catch (error) {
+      console.error('Error loading history:', error);
+      setHistory([]);
+    } finally {
+      setInitialized(true);
+    }
   }, []);
 
   const addEntry = useCallback((entry) => {
-    const newHistory = [entry, ...history];
-    localStorage.setItem('foodHistory', JSON.stringify(newHistory));
-    setHistory(newHistory);
-  }, [history]);
+    try {
+      const currentHistory = JSON.parse(localStorage.getItem('foodHistory') || '[]');
+      const newHistory = [entry, ...currentHistory];
+      localStorage.setItem('foodHistory', JSON.stringify(newHistory));
+      setHistory(newHistory);
+    } catch (error) {
+      console.error('Error adding entry:', error);
+    }
+  }, []);
 
   const editEntry = useCallback((index, updatedEntry) => {
-    const newHistory = [...history];
-    newHistory[index] = updatedEntry;
-    localStorage.setItem('foodHistory', JSON.stringify(newHistory));
-    setHistory(newHistory);
-  }, [history]);
+    try {
+      const currentHistory = JSON.parse(localStorage.getItem('foodHistory') || '[]');
+      const newHistory = [...currentHistory];
+      newHistory[index] = updatedEntry;
+      localStorage.setItem('foodHistory', JSON.stringify(newHistory));
+      setHistory(newHistory);
+    } catch (error) {
+      console.error('Error editing entry:', error);
+    }
+  }, []);
 
   const deleteEntry = useCallback((index) => {
-    const newHistory = history.filter((_, i) => i !== index);
-    localStorage.setItem('foodHistory', JSON.stringify(newHistory));
-    setHistory(newHistory);
-  }, [history]);
+    try {
+      const currentHistory = JSON.parse(localStorage.getItem('foodHistory') || '[]');
+      const newHistory = currentHistory.filter((_, i) => i !== index);
+      localStorage.setItem('foodHistory', JSON.stringify(newHistory));
+      setHistory(newHistory);
+    } catch (error) {
+      console.error('Error deleting entry:', error);
+    }
+  }, []);
 
-  return { history, addEntry, editEntry, deleteEntry };
+  return { 
+    history, 
+    addEntry, 
+    editEntry, 
+    deleteEntry,
+    initialized // Add this to know when initial load is complete
+  };
 }

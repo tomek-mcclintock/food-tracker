@@ -58,14 +58,14 @@ const groupEntriesByDay = (entries) => {
 };
 
 export default function History() {
-  const { history, editEntry, deleteEntry } = useFoodHistory();
+  const { history, editEntry, deleteEntry, initialized } = useFoodHistory();
   const [groupedEntries, setGroupedEntries] = useState([]);
   const [editingEntry, setEditingEntry] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     try {
-      if (history) {
+      if (initialized && history) {
         const processed = groupEntriesByDay(history);
         setGroupedEntries(processed);
         setError(null);
@@ -74,7 +74,7 @@ export default function History() {
       console.error('Error processing history:', err);
       setError('Error loading history. Please try refreshing the page.');
     }
-  }, [history]);
+  }, [history, initialized]);
 
   const handleSave = (updatedEntry) => {
     try {
