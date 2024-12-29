@@ -1,6 +1,6 @@
 "use client"
 
-import { History, PlusCircle, User } from 'lucide-react';
+import { History, PlusCircle, User, LineChart } from 'lucide-react';  // Added LineChart
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -23,6 +23,14 @@ const BottomNav = () => {
       >
         <PlusCircle size={32} />
         <span className="text-xs">Add</span>
+      </Link>
+      
+      <Link 
+        href="/insights" 
+        className={`flex flex-col items-center p-2 ${pathname === '/insights' ? 'text-blue-500' : 'text-gray-500'}`}
+      >
+        <LineChart size={24} />
+        <span className="text-xs">Insights</span>
       </Link>
       
       <Link 
