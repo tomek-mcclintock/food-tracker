@@ -1,8 +1,16 @@
 "use client"
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { db } from '@/lib/firebase';
-import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
+import { 
+  collection, 
+  addDoc, 
+  query, 
+  where, 
+  getDocs,
+  orderBy,
+  limit 
+} from 'firebase/firestore';
 import { useAuth } from '@/context/AuthContext';
 
 export function useInsights() {
@@ -10,6 +18,31 @@ export function useInsights() {
   const [error, setError] = useState(null);
   const [insights, setInsights] = useState(null);
   const { user } = useAuth();
+
+  // Load the most recent insights when component mounts
+  useEffect(() => {
+    const loadLatestInsights = async () => {
+      if (!user) return;
+      try {
+        const q = query(
+          collection(db, 'insights'),
+          where('userId', '==', user.uid),
+          orderBy('createdAt', 'desc'),
+          limit(1)
+        );
+        
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          const latestInsight = querySnapshot.docs[0].data();
+          setInsights(latestInsight.insights);
+        }
+      } catch (err) {
+        console.error('Error loading insights:', err);
+      }
+    };
+
+    loadLatestInsights();
+  }, [user]);
 
   const generateInsights = useCallback(async (history) => {
     if (!user) return;
@@ -33,9 +66,8 @@ export function useInsights() {
       const data = await response.json();
       setInsights(data);
       
-      // Store insights in Firestore
-      const insightsRef = collection(db, 'insights');
-      await addDoc(insightsRef, {
+      // Store insights in Firestore with timestamp
+      await addDoc(collection(db, 'insights'), {
         userId: user.uid,
         insights: data,
         createdAt: new Date().toISOString()
@@ -49,29 +81,5 @@ export function useInsights() {
     }
   }, [user]);
 
-  // Load latest insights for user
-  const loadInsights = useCallback(async () => {
-    if (!user) return;
-    try {
-      const q = query(
-        collection(db, 'insights'),
-        where('userId', '==', user.uid)
-      );
-      const querySnapshot = await getDocs(q);
-      const latestInsight = querySnapshot.docs
-        .map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }))
-        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
-
-      if (latestInsight) {
-        setInsights(latestInsight.insights);
-      }
-    } catch (error) {
-      console.error('Error loading insights:', error);
-    }
-  }, [user]);
-
-  return { insights, loading, error, generateInsights, loadInsights };
+  return { insights, loading, error, generateInsights };
 }
