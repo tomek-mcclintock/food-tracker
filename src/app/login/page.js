@@ -22,8 +22,8 @@ export default function Login() {
     setLoading(true);
     
     try {
-      await login(email, password);
-      router.push('/history');
+      await login(email, password); // or signup for signup page
+      window.location.href = '/history'; // Force full page reload
     } catch (err) {
       setError('Failed to login. Please check your credentials.');
       console.error(err);
@@ -31,14 +31,14 @@ export default function Login() {
       setLoading(false);
     }
   };
-
+  
   const handleGoogleSignIn = async () => {
     setError('');
     setLoading(true);
     
     try {
       await signInWithGoogle();
-      router.push('/history');
+      window.location.href = '/history'; // Force full page reload
     } catch (err) {
       setError('Failed to sign in with Google.');
       console.error(err);

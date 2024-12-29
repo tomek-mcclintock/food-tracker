@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -15,7 +14,6 @@ export default function Signup() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { signup, signInWithGoogle } = useAuth();
-  const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,7 +33,7 @@ export default function Signup() {
     
     try {
       await signup(email, password);
-      router.push('/history');
+      window.location.href = '/history';
     } catch (err) {
       setError('Failed to create account');
       console.error(err);
@@ -50,7 +48,7 @@ export default function Signup() {
     
     try {
       await signInWithGoogle();
-      router.push('/history');
+      window.location.href = '/history';
     } catch (err) {
       setError('Failed to sign in with Google');
       console.error(err);
