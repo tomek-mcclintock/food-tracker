@@ -84,7 +84,7 @@ export default function DaySection({ date, wellness, foods, onEditWellness, onEd
   
   // Combine all entries for the day and sort by time
   const allEntries = [
-    ...(wellness ? [wellness] : []),
+    ...(wellness || []), // wellness is now an array
     ...foods
   ].sort((a, b) => new Date(a.date) - new Date(b.date));
 

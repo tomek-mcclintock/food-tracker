@@ -22,7 +22,7 @@ const groupEntriesByDay = (entries) => {
       if (!dayMap.has(dateKey)) {
         dayMap.set(dateKey, {
           date: entryDate,
-          wellness: null,
+          wellness: [], // Changed from null to an array
           foods: []
         });
       }
@@ -30,9 +30,8 @@ const groupEntriesByDay = (entries) => {
       const dayData = dayMap.get(dateKey);
 
       if (entry.type === 'wellness') {
-        if (!dayData.wellness || new Date(entry.date) > new Date(dayData.wellness.date)) {
-          dayData.wellness = { ...entry };
-        }
+        // Add all wellness entries to the array instead of replacing
+        dayData.wellness.push({ ...entry });
       } else if (entry.type === 'food') {
         if (!entry.mealType) {
           const hour = entryDate.getHours();
