@@ -113,20 +113,31 @@ export default function History() {
             date={dayData.date}
             wellness={dayData.wellness}
             foods={dayData.foods}
-            onEditWellness={() => setEditingEntry(dayData.wellness)}
+            onEditWellness={(entry) => setEditingEntry(entry)}
             onEditFood={(food) => setEditingEntry(food)}
             onDeleteFood={(food) => {
               try {
-                if (food.id) {  // Check for ID before deleting
+                if (food.id) {
                   deleteEntry(food.id);
                 }
               } catch (err) {
-                console.error('Error deleting entry:', err);
+                console.error('Error deleting food entry:', err);
+                setError('Error deleting entry. Please try again.');
+              }
+            }}
+            onDeleteWellness={(wellness) => {
+              try {
+                if (wellness.id) {
+                  deleteEntry(wellness.id);
+                }
+              } catch (err) {
+                console.error('Error deleting wellness entry:', err);
                 setError('Error deleting entry. Please try again.');
               }
             }}
           />
         ))}
+
 
         {(!groupedEntries || groupedEntries.length === 0) && (
           <div className="text-center py-12 text-gray-500">

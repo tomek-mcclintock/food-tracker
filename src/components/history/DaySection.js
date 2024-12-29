@@ -24,12 +24,22 @@ const Entry = ({ entry, onEdit, onDelete }) => {
         <div className="flex items-center gap-2 mb-2">
           <CheckCircle2 className="w-4 h-4 text-green-500" />
           <span className="text-sm text-gray-600">{time} Check-in</span>
-          <button
-            onClick={() => onEdit(entry)}
-            className="p-1 hover:bg-gray-100 rounded-full ml-auto"
-          >
-            <Pencil className="w-3.5 h-3.5 text-gray-500" />
-          </button>
+          <div className="ml-auto flex gap-1">
+            <button
+              onClick={() => onEdit(entry)}
+              className="p-1 hover:bg-gray-100 rounded-full"
+            >
+              <Pencil className="w-3.5 h-3.5 text-gray-500" />
+            </button>
+            {onDelete && (
+              <button
+                onClick={() => onDelete(entry)}
+                className="p-1 hover:bg-gray-100 rounded-full"
+              >
+                <Trash2 className="w-3.5 h-3.5 text-gray-500" />
+              </button>
+            )}
+          </div>
         </div>
         <div className="ml-6 space-y-1">
           <p className="text-sm">Stomach: {entry.stomach}</p>
@@ -79,12 +89,12 @@ const Entry = ({ entry, onEdit, onDelete }) => {
   );
 };
 
-export default function DaySection({ date, wellness, foods, onEditWellness, onEditFood, onDeleteFood }) {
+export default function DaySection({ date, wellness, foods, onEditWellness, onEditFood, onDeleteFood, onDeleteWellness }) {
   const formattedDate = format(date, 'EEE d MMM yyyy');
   
   // Combine all entries for the day and sort by time
   const allEntries = [
-    ...(wellness || []), // wellness is now an array
+    ...(wellness || []),
     ...foods
   ].sort((a, b) => new Date(a.date) - new Date(b.date));
 
@@ -96,7 +106,7 @@ export default function DaySection({ date, wellness, foods, onEditWellness, onEd
           key={index}
           entry={entry}
           onEdit={entry.type === 'wellness' ? onEditWellness : onEditFood}
-          onDelete={entry.type === 'food' ? () => onDeleteFood(entry) : null}
+          onDelete={entry.type === 'wellness' ? onDeleteWellness : (entry.type === 'food' ? () => onDeleteFood(entry) : null)}
         />
       ))}
       <div className="border-b border-gray-200 mt-6"></div>
