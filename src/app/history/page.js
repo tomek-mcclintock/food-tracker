@@ -7,20 +7,26 @@ import DaySection from '@/components/history/DaySection';
 import EditEntry from '@/components/history/EditEntry';
 
 const groupEntriesByDay = (entries) => {
-  if (!Array.isArray(entries)) return [];  // Defensive check
+  if (!Array.isArray(entries)) return [];
   
   const dayMap = new Map();
 
   entries.forEach(entry => {
-    // Add more defensive checks
-    if (!entry || !entry.date) return;
+    if (!entry || !entry.date) {
+      console.log('Invalid entry:', entry); // Debug log
+      return;
+    }
 
     try {
-      // Wrap date parsing in try-catch
+      // Parse the date, handling both ISO and locale string formats
       const entryDate = new Date(entry.date);
-      if (isNaN(entryDate.getTime())) return; // Skip invalid dates
+      if (isNaN(entryDate.getTime())) {
+        console.log('Invalid date:', entry.date); // Debug log
+        return;
+      }
       
       const dateKey = entryDate.toISOString().split('T')[0];
+      console.log('Processing entry for date:', dateKey); // Debug log
 
       if (!dayMap.has(dateKey)) {
         dayMap.set(dateKey, {
@@ -38,23 +44,20 @@ const groupEntriesByDay = (entries) => {
         }
       } else if (entry.type === 'food') {
         // Ensure mealType is always set
-        if (!entry.mealType) {
-          const hour = entryDate.getHours();
-          if (hour < 11) entry.mealType = 'Breakfast';
-          else if (hour < 15) entry.mealType = 'Lunch';
-          else if (hour < 20) entry.mealType = 'Dinner';
-          else entry.mealType = 'Snack';
-        }
-        dayData.foods.push({ ...entry });
+        const mealType = entry.mealType || getMealType(entryDate);
+        dayData.foods.push({ ...entry, mealType });
       }
     } catch (error) {
-      console.error('Error processing entry:', error);
-      return; // Skip problematic entries
+      console.error('Error processing entry:', error, entry);
     }
   });
 
-  return Array.from(dayMap.values())
+  // Add debug log for final grouped entries
+  const grouped = Array.from(dayMap.values())
     .sort((a, b) => b.date - a.date);
+  console.log('Grouped entries:', grouped);
+
+  return grouped;
 };
 
 export default function History() {

@@ -11,6 +11,15 @@ import InputSection from '@/components/food/InputSection';
 import CameraSection from '@/components/food/CameraSection';
 import ResultsSection from '@/components/food/ResultsSection';
 
+// Add the helper function here
+const getMealType = (date) => {
+  const hour = date.getHours();
+  if (hour < 11) return 'Breakfast';
+  if (hour < 15) return 'Lunch';
+  if (hour < 20) return 'Dinner';
+  return 'Snack';
+};
+
 const AddFood = () => {
   const [showCamera, setShowCamera] = useState(false);
   const [showWellnessCheck, setShowWellnessCheck] = useState(false);
@@ -41,12 +50,14 @@ const AddFood = () => {
   };
 
   const handleSave = (resultsToSave) => {
+    const now = new Date();
     const newEntry = {
-      date: new Date().toLocaleString(),
+      date: now.toISOString(), // Use ISO format instead of toLocaleString
       food: resultsToSave.mainItem,
       ingredients: resultsToSave.ingredients.join(", "),
       sensitivities: resultsToSave.sensitivities || [],
-      type: 'food'
+      type: 'food',
+      mealType: getMealType(now) // Add this helper function
     };
     
     const success = addEntry(newEntry);
