@@ -5,6 +5,9 @@ export async function POST(request) {
     const body = await request.json();
     const { history } = body;
 
+    // Add debug logging to see what data we're receiving
+    console.log('History data being sent to Claude:', history);
+
     const prompt = `Analyze this food and wellness diary data: ${JSON.stringify(history)}
 
 Write a friendly, personal analysis speaking directly to the user (using "you" not "the user"). Be concise but warm. Focus on one key pattern you notice in their recent food and wellness data, any clear correlations between specific foods and how they felt within 48 hours.
@@ -51,6 +54,9 @@ Examples of good language:
 
     const data = await response.json();
     const insights = JSON.parse(data.content[0].text);
+
+    // Add debug logging for Claude's response
+    console.log('Claude insights response:', insights);
 
     return NextResponse.json(insights);
   } catch (error) {
