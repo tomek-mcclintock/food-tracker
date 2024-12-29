@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';  // Removed useState and useEffect since we don't need them anymore
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, RefreshCw, AlertCircle } from 'lucide-react';
@@ -10,12 +10,6 @@ import { useInsights } from '@/hooks/useInsights';
 export default function Insights() {
   const { history } = useFoodHistory();
   const { insights, loading, error, generateInsights } = useInsights();
-
-  useEffect(() => {
-    if (history && history.length > 0) {
-      generateInsights(history);
-    }
-  }, [history, generateInsights]);
 
   const handleRefresh = () => {
     if (history && history.length > 0) {
@@ -112,7 +106,17 @@ export default function Insights() {
             </CardContent>
           </Card>
         </div>
-      ) : null}
+      ) : (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center py-8">
+              <p className="text-gray-500">
+                Click refresh to generate insights from your food diary.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
