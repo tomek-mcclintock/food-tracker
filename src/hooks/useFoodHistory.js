@@ -1,70 +1,63 @@
 "use client"
 
 import { useState, useEffect, useCallback } from 'react';
+import { useFirestore } from './useFirestore';
+import { useAuth } from '@/context/AuthContext';
 
 export function useFoodHistory() {
   const [history, setHistory] = useState([]);
-  const [initialized, setInitialized] = useState(false);
-  
-  // Load initial data
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem('foodHistory');
-      setHistory(saved ? JSON.parse(saved) : []);
-    } catch (error) {
-      console.error('Error loading history:', error);
-      setHistory([]);
-    } finally {
-      setInitialized(true);
-    }
-  }, []);
+  const { user } = useAuth();
+  const { addEntry: addToFirestore, getEntries, updateEntry: updateInFirestore, deleteEntry: deleteFromFirestore } = useFirestore();
 
-  const addEntry = useCallback((entry) => {
+  // Load entries when component mounts or user changes
+  useEffect(() => {
+    if (user) {
+      const loadEntries = async () => {
+        try {
+          const entries = await getEntries();
+          setHistory(entries);
+        } catch (error) {
+          console.error('Error loading entries:', error);
+        }
+      };
+      loadEntries();
+    } else {
+      setHistory([]); // Clear history when user logs out
+    }
+  }, [user, getEntries]);
+
+  const addEntry = useCallback(async (entry) => {
     try {
-      console.log('Adding entry:', entry); // Debug log
-      const currentHistory = JSON.parse(localStorage.getItem('foodHistory') || '[]');
-      console.log('Current history:', currentHistory); // Debug log
-      const newHistory = [entry, ...currentHistory];
-      localStorage.setItem('foodHistory', JSON.stringify(newHistory));
-      console.log('New history saved:', newHistory); // Debug log
-      setHistory(newHistory);
-  
-      // Add immediate visual feedback
-      return true;
+      await addToFirestore(entry);
+      // Refresh the history after adding
+      const updatedEntries = await getEntries();
+      setHistory(updatedEntries);
     } catch (error) {
       console.error('Error adding entry:', error);
-      return false;
     }
-  }, []);
+  }, [addToFirestore, getEntries]);
 
-  const editEntry = useCallback((index, updatedEntry) => {
+  const editEntry = useCallback(async (id, updatedEntry) => {
     try {
-      const currentHistory = JSON.parse(localStorage.getItem('foodHistory') || '[]');
-      const newHistory = [...currentHistory];
-      newHistory[index] = updatedEntry;
-      localStorage.setItem('foodHistory', JSON.stringify(newHistory));
-      setHistory(newHistory);
+      await updateInFirestore(id, updatedEntry);
+      // Refresh the history after updating
+      const updatedEntries = await getEntries();
+      setHistory(updatedEntries);
     } catch (error) {
-      console.error('Error editing entry:', error);
+      console.error('Error updating entry:', error);
     }
-  }, []);
+  }, [updateInFirestore, getEntries]);
 
-  const deleteEntry = useCallback((index) => {
+  const deleteEntry = useCallback(async (id) => {
     try {
-      const currentHistory = JSON.parse(localStorage.getItem('foodHistory') || '[]');
-      const newHistory = currentHistory.filter((_, i) => i !== index);
-      localStorage.setItem('foodHistory', JSON.stringify(newHistory));
-      setHistory(newHistory);
+      await deleteFromFirestore(id);
+      // Refresh the history after deleting
+      const updatedEntries = await getEntries();
+      setHistory(updatedEntries);
     } catch (error) {
       console.error('Error deleting entry:', error);
     }
-  }, []);
+  }, [deleteFromFirestore, getEntries]);
 
-  return { 
-    history, 
-    addEntry, 
-    editEntry, 
-    deleteEntry,
-    initialized // Add this to know when initial load is complete
-  };
+  return { history, addEntry, editEntry, deleteEntry };
 }

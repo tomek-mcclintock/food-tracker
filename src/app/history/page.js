@@ -1,4 +1,3 @@
-// src/app/history/page.js
 "use client"
 
 import React, { useEffect, useState } from 'react';
@@ -12,21 +11,13 @@ const groupEntriesByDay = (entries) => {
   const dayMap = new Map();
 
   entries.forEach(entry => {
-    if (!entry || !entry.date) {
-      console.log('Invalid entry:', entry); // Debug log
-      return;
-    }
+    if (!entry || !entry.date) return;
 
     try {
-      // Parse the date, handling both ISO and locale string formats
       const entryDate = new Date(entry.date);
-      if (isNaN(entryDate.getTime())) {
-        console.log('Invalid date:', entry.date); // Debug log
-        return;
-      }
+      if (isNaN(entryDate.getTime())) return;
       
       const dateKey = entryDate.toISOString().split('T')[0];
-      console.log('Processing entry for date:', dateKey); // Debug log
 
       if (!dayMap.has(dateKey)) {
         dayMap.set(dateKey, {
@@ -43,32 +34,33 @@ const groupEntriesByDay = (entries) => {
           dayData.wellness = { ...entry };
         }
       } else if (entry.type === 'food') {
-        // Ensure mealType is always set
-        const mealType = entry.mealType || getMealType(entryDate);
-        dayData.foods.push({ ...entry, mealType });
+        if (!entry.mealType) {
+          const hour = entryDate.getHours();
+          if (hour < 11) entry.mealType = 'Breakfast';
+          else if (hour < 15) entry.mealType = 'Lunch';
+          else if (hour < 20) entry.mealType = 'Dinner';
+          else entry.mealType = 'Snack';
+        }
+        dayData.foods.push({ ...entry });
       }
     } catch (error) {
-      console.error('Error processing entry:', error, entry);
+      console.error('Error processing entry:', error);
     }
   });
 
-  // Add debug log for final grouped entries
-  const grouped = Array.from(dayMap.values())
+  return Array.from(dayMap.values())
     .sort((a, b) => b.date - a.date);
-  console.log('Grouped entries:', grouped);
-
-  return grouped;
 };
 
 export default function History() {
-  const { history, editEntry, deleteEntry, initialized } = useFoodHistory();
+  const { history, editEntry, deleteEntry } = useFoodHistory();
   const [groupedEntries, setGroupedEntries] = useState([]);
   const [editingEntry, setEditingEntry] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     try {
-      if (initialized && history) {
+      if (history) {
         const processed = groupEntriesByDay(history);
         setGroupedEntries(processed);
         setError(null);
@@ -77,17 +69,14 @@ export default function History() {
       console.error('Error processing history:', err);
       setError('Error loading history. Please try refreshing the page.');
     }
-  }, [history, initialized]);
+  }, [history]);
 
   const handleSave = (updatedEntry) => {
     try {
       if (!editingEntry) return;
       
-      const index = history.findIndex(entry => 
-        entry.date === editingEntry.date && entry.type === editingEntry.type
-      );
-      if (index !== -1) {
-        editEntry(index, { ...updatedEntry, date: editingEntry.date });
+      if (editingEntry.id) { // Check if entry has an ID
+        editEntry(editingEntry.id, updatedEntry);
       }
       setEditingEntry(null);
     } catch (err) {
@@ -129,11 +118,8 @@ export default function History() {
             onEditFood={(food) => setEditingEntry(food)}
             onDeleteFood={(food) => {
               try {
-                const index = history.findIndex(entry => 
-                  entry.date === food.date && entry.food === food.food
-                );
-                if (index !== -1) {
-                  deleteEntry(index);
+                if (food.id) {  // Check for ID before deleting
+                  deleteEntry(food.id);
                 }
               } catch (err) {
                 console.error('Error deleting entry:', err);

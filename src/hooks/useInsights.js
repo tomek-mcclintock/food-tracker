@@ -1,25 +1,18 @@
 "use client"
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
+import { db } from '@/lib/firebase';
+import { collection, addDoc, query, where, getDocs } from 'firebase/firestore';
+import { useAuth } from '@/context/AuthContext';
 
 export function useInsights() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [insights, setInsights] = useState(null);
-
-  // Load saved insights when component mounts
-  useEffect(() => {
-    try {
-      const savedInsights = localStorage.getItem('foodInsights');
-      if (savedInsights) {
-        setInsights(JSON.parse(savedInsights));
-      }
-    } catch (error) {
-      console.error('Error loading saved insights:', error);
-    }
-  }, []);
+  const { user } = useAuth();
 
   const generateInsights = useCallback(async (history) => {
+    if (!user) return;
     setLoading(true);
     setError(null);
 
@@ -39,15 +32,46 @@ export function useInsights() {
 
       const data = await response.json();
       setInsights(data);
-      // Save insights to localStorage
-      localStorage.setItem('foodInsights', JSON.stringify(data));
+      
+      // Store insights in Firestore
+      const insightsRef = collection(db, 'insights');
+      await addDoc(insightsRef, {
+        userId: user.uid,
+        insights: data,
+        createdAt: new Date().toISOString()
+      });
+
     } catch (err) {
       console.error('Error generating insights:', err);
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user]);
 
-  return { insights, loading, error, generateInsights };
+  // Load latest insights for user
+  const loadInsights = useCallback(async () => {
+    if (!user) return;
+    try {
+      const q = query(
+        collection(db, 'insights'),
+        where('userId', '==', user.uid)
+      );
+      const querySnapshot = await getDocs(q);
+      const latestInsight = querySnapshot.docs
+        .map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }))
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
+
+      if (latestInsight) {
+        setInsights(latestInsight.insights);
+      }
+    } catch (error) {
+      console.error('Error loading insights:', error);
+    }
+  }, [user]);
+
+  return { insights, loading, error, generateInsights, loadInsights };
 }
