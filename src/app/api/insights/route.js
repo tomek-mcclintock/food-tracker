@@ -5,25 +5,38 @@ export async function POST(request) {
     const body = await request.json();
     const { history } = body;
 
-    // Add debug logging to see what data we're receiving
-    console.log('History data being sent to Claude:', history);
+    // Filter to last 14 days
+    const twoWeeksAgo = new Date();
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+    
+    const recentHistory = history.filter(entry => {
+      const entryDate = new Date(entry.date);
+      return entryDate >= twoWeeksAgo;
+    });
 
-    const prompt = `Analyze this food and wellness diary data: ${JSON.stringify(history)}
+    // Sort by date to ensure chronological order
+    recentHistory.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-Write a friendly, personal analysis speaking directly to the user (using "you" not "the user"). Be concise but warm. Focus on one key pattern you notice in their recent food and wellness data, any clear correlations between specific foods and how they felt within 48 hours.
+    console.log(`Analyzing ${recentHistory.length} entries from the last 14 days`);
+
+    const prompt = `Analyze this food and wellness diary data from the last 2 weeks: ${JSON.stringify(recentHistory)}
+
+Consider:
+- Both recent and historical patterns
+- Any correlations between foods and how someone feels
+- Changes in wellness over time
+- Ingredients that appear frequently before changes in wellness
 
 Return a JSON object with exactly this format:
 {
-  "mainInsight": "One clear, conversational sentence about the strongest pattern you notice",
-  "recentPattern": "Short, friendly note about what happened in last 48h",
-  "suggestion": "Brief, actionable suggestion that includes encouragement to keep tracking in the app",
-  "ingredients": ["ingredient1", "ingredient2"] // 1-3 specific ingredients to watch, if any patterns exist
+  "mainInsight": "Most significant pattern you notice in their data",
+  "recentPattern": "What happened in last 48h, if there's relevant data",
+  "historicalPattern": "Key trends or changes you notice across the full 2 weeks",
+  "suggestion": "Brief, actionable suggestion based on what you notice. Encourage continued tracking",
+  "ingredients": ["ingredient1", "ingredient2"] // List 1-3 ingredients that might be affecting wellness, if any patterns exist
 }
 
-Examples of good language:
-"Looks like dairy might be affecting your energy levels"
-"I noticed you felt less energetic after meals with gluten"
-"Try avoiding tomatoes for a few days and keep tracking - it'll help us spot any patterns!"`;
+Keep insights concise and personal, using "you" when speaking to the user.`;
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -54,9 +67,6 @@ Examples of good language:
 
     const data = await response.json();
     const insights = JSON.parse(data.content[0].text);
-
-    // Add debug logging for Claude's response
-    console.log('Claude insights response:', insights);
 
     return NextResponse.json(insights);
   } catch (error) {
