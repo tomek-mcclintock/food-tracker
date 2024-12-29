@@ -26,6 +26,17 @@ export function useFoodHistory() {
     }
   }, [user, getEntries]);
 
+  const addEntry = useCallback(async (entry) => {
+    try {
+      await addToFirestore(entry);
+      // Refresh the history after adding
+      const updatedEntries = await getEntries();
+      setHistory(updatedEntries);
+    } catch (error) {
+      console.error('Error adding entry:', error);
+    }
+  }, [addToFirestore, getEntries]);
+
   const editEntry = useCallback(async (id, updatedEntry) => {
     try {
       await updateInFirestore(id, updatedEntry);
@@ -33,17 +44,6 @@ export function useFoodHistory() {
       const updatedEntries = await getEntries();
       setHistory(updatedEntries);
       console.log('Updated history after edit:', updatedEntries); // Debug log
-    } catch (error) {
-      console.error('Error updating entry:', error);
-    }
-  }, [updateInFirestore, getEntries]);
-
-  const editEntry = useCallback(async (id, updatedEntry) => {
-    try {
-      await updateInFirestore(id, updatedEntry);
-      // Refresh the history after updating
-      const updatedEntries = await getEntries();
-      setHistory(updatedEntries);
     } catch (error) {
       console.error('Error updating entry:', error);
     }
