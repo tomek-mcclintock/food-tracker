@@ -5,25 +5,22 @@ export async function POST(request) {
     const body = await request.json();
     const { history } = body;
 
-    // Prepare the data for Claude's analysis
-    const prompt = `Analyze this food and wellness diary data carefully. Consider correlations between foods eaten and subsequent wellness checks within 48 hours. Look for patterns in ingredients or food types that might affect stomach comfort or energy levels.
+    const prompt = `Analyze this food and wellness diary data: ${JSON.stringify(history)}
 
-History data: ${JSON.stringify(history)}
+Write a friendly, personal analysis speaking directly to the user (using "you" not "the user"). Be concise but warm. Focus on one key pattern you notice in their recent food and wellness data, any clear correlations between specific foods and how they felt within 48 hours.
 
-Provide a brief, friendly analysis focusing on:
-1. Recent patterns in the last 48 hours
-2. Any recurring patterns over the past two weeks
-3. Specific ingredients that might be affecting wellness
-4. A clear, actionable suggestion
-
-Return a JSON object with this exact format:
+Return a JSON object with exactly this format:
 {
-  "mainInsight": "Brief 1-2 sentence summary of most important recent pattern",
-  "recentPattern": "Pattern from last 48h",
-  "historicalPattern": "Pattern from past 2 weeks",
-  "suggestion": "Specific, actionable suggestion",
-  "ingredients": ["ingredient1", "ingredient2"] // List of ingredients to watch
-}`;
+  "mainInsight": "One clear, conversational sentence about the strongest pattern you notice",
+  "recentPattern": "Short, friendly note about what happened in last 48h",
+  "suggestion": "Brief, actionable suggestion that includes encouragement to keep tracking in the app",
+  "ingredients": ["ingredient1", "ingredient2"] // 1-3 specific ingredients to watch, if any patterns exist
+}
+
+Examples of good language:
+"Looks like dairy might be affecting your energy levels"
+"I noticed you felt less energetic after meals with gluten"
+"Try avoiding tomatoes for a few days and keep tracking - it'll help us spot any patterns!"`;
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
