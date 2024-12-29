@@ -7,41 +7,49 @@ import DaySection from '@/components/history/DaySection';
 import EditEntry from '@/components/history/EditEntry';
 
 const groupEntriesByDay = (entries) => {
-  if (!Array.isArray(entries)) return [];
+  if (!Array.isArray(entries)) return [];  // Defensive check
   
   const dayMap = new Map();
 
   entries.forEach(entry => {
+    // Add more defensive checks
     if (!entry || !entry.date) return;
 
-    // Get just the date part for grouping
-    const entryDate = new Date(entry.date);
-    const dateKey = entryDate.toISOString().split('T')[0];
+    try {
+      // Wrap date parsing in try-catch
+      const entryDate = new Date(entry.date);
+      if (isNaN(entryDate.getTime())) return; // Skip invalid dates
+      
+      const dateKey = entryDate.toISOString().split('T')[0];
 
-    if (!dayMap.has(dateKey)) {
-      dayMap.set(dateKey, {
-        date: entryDate,
-        wellness: null,
-        foods: []
-      });
-    }
-
-    const dayData = dayMap.get(dateKey);
-
-    if (entry.type === 'wellness') {
-      if (!dayData.wellness || new Date(entry.date) > new Date(dayData.wellness.date)) {
-        dayData.wellness = { ...entry };
+      if (!dayMap.has(dateKey)) {
+        dayMap.set(dateKey, {
+          date: entryDate,
+          wellness: null,
+          foods: []
+        });
       }
-    } else if (entry.type === 'food') {
-      // If mealType isn't set, guess based on time
-      if (!entry.mealType) {
-        const hour = entryDate.getHours();
-        if (hour < 11) entry.mealType = 'Breakfast';
-        else if (hour < 15) entry.mealType = 'Lunch';
-        else if (hour < 20) entry.mealType = 'Dinner';
-        else entry.mealType = 'Snack';
+
+      const dayData = dayMap.get(dateKey);
+
+      if (entry.type === 'wellness') {
+        if (!dayData.wellness || new Date(entry.date) > new Date(dayData.wellness.date)) {
+          dayData.wellness = { ...entry };
+        }
+      } else if (entry.type === 'food') {
+        // Ensure mealType is always set
+        if (!entry.mealType) {
+          const hour = entryDate.getHours();
+          if (hour < 11) entry.mealType = 'Breakfast';
+          else if (hour < 15) entry.mealType = 'Lunch';
+          else if (hour < 20) entry.mealType = 'Dinner';
+          else entry.mealType = 'Snack';
+        }
+        dayData.foods.push({ ...entry });
       }
-      dayData.foods.push({ ...entry });
+    } catch (error) {
+      console.error('Error processing entry:', error);
+      return; // Skip problematic entries
     }
   });
 
@@ -53,24 +61,47 @@ export default function History() {
   const { history, editEntry, deleteEntry } = useFoodHistory();
   const [groupedEntries, setGroupedEntries] = useState([]);
   const [editingEntry, setEditingEntry] = useState(null);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (history) {
-      setGroupedEntries(groupEntriesByDay(history));
+    try {
+      if (history) {
+        const processed = groupEntriesByDay(history);
+        setGroupedEntries(processed);
+        setError(null);
+      }
+    } catch (err) {
+      console.error('Error processing history:', err);
+      setError('Error loading history. Please try refreshing the page.');
     }
   }, [history]);
 
   const handleSave = (updatedEntry) => {
-    if (!editingEntry) return;
-    
-    const index = history.findIndex(entry => 
-      entry.date === editingEntry.date && entry.type === editingEntry.type
-    );
-    if (index !== -1) {
-      editEntry(index, { ...updatedEntry, date: editingEntry.date });
+    try {
+      if (!editingEntry) return;
+      
+      const index = history.findIndex(entry => 
+        entry.date === editingEntry.date && entry.type === editingEntry.type
+      );
+      if (index !== -1) {
+        editEntry(index, { ...updatedEntry, date: editingEntry.date });
+      }
+      setEditingEntry(null);
+    } catch (err) {
+      console.error('Error saving entry:', err);
+      setError('Error saving changes. Please try again.');
     }
-    setEditingEntry(null);
   };
+
+  if (error) {
+    return (
+      <div className="max-w-2xl mx-auto pb-24 px-4">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600">
+          {error}
+        </div>
+      </div>
+    );
+  }
 
   if (!history) {
     return (
@@ -94,11 +125,16 @@ export default function History() {
             onEditWellness={() => setEditingEntry(dayData.wellness)}
             onEditFood={(food) => setEditingEntry(food)}
             onDeleteFood={(food) => {
-              const index = history.findIndex(entry => 
-                entry.date === food.date && entry.food === food.food
-              );
-              if (index !== -1) {
-                deleteEntry(index);
+              try {
+                const index = history.findIndex(entry => 
+                  entry.date === food.date && entry.food === food.food
+                );
+                if (index !== -1) {
+                  deleteEntry(index);
+                }
+              } catch (err) {
+                console.error('Error deleting entry:', err);
+                setError('Error deleting entry. Please try again.');
               }
             }}
           />
