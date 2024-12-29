@@ -17,26 +17,35 @@ export async function POST(request) {
     // Sort by date to ensure chronological order
     recentHistory.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-    console.log(`Analyzing ${recentHistory.length} entries from the last 14 days`);
+    // Debug logs to understand the data being analyzed
+    console.log('Two weeks ago date:', twoWeeksAgo);
+    console.log('Total entries:', history.length);
+    console.log('Filtered entries:', recentHistory.length);
+    console.log('First entry date:', new Date(recentHistory[0]?.date));
+    console.log('Last entry date:', new Date(recentHistory[recentHistory.length - 1]?.date));
+    console.log('Recent history:', JSON.stringify(recentHistory, null, 2));
 
-    const prompt = `Analyze this food and wellness diary data from the last 2 weeks: ${JSON.stringify(recentHistory)}
+    const prompt = `Analyze this food diary and wellness data. The data is chronologically sorted over a 2-week period, from oldest to newest entries: ${JSON.stringify(recentHistory)}
+
+Important: The data is sorted chronologically. The earliest entries are first, and the most recent are last.
 
 Consider:
-- Both recent and historical patterns
-- Any correlations between foods and how someone feels
-- Changes in wellness over time
-- Ingredients that appear frequently before changes in wellness
+- How wellness and food patterns have changed from the beginning to the end of this period
+- Most recent 48 hours should be based on the latest entries
+- Overall trends across the full 2 weeks
+- Ingredients that consistently appear before changes in wellness
 
 Return a JSON object with exactly this format:
 {
   "mainInsight": "Most significant pattern you notice in their data",
-  "recentPattern": "What happened in last 48h, if there's relevant data",
-  "historicalPattern": "Key trends or changes you notice across the full 2 weeks",
+  "recentPattern": "What happened in last 48h (based on the latest entries)",
+  "historicalPattern": "Key trends or changes you notice comparing earlier vs later entries in the 2-week period",
   "suggestion": "Brief, actionable suggestion based on what you notice. Encourage continued tracking",
   "ingredients": ["ingredient1", "ingredient2"] // List 1-3 ingredients that might be affecting wellness, if any patterns exist
 }
 
 Keep insights concise and personal, using "you" when speaking to the user.`;
+
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
