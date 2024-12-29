@@ -1,11 +1,23 @@
 "use client"
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 export function useInsights() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [insights, setInsights] = useState(null);
+
+  // Load saved insights when component mounts
+  useEffect(() => {
+    try {
+      const savedInsights = localStorage.getItem('foodInsights');
+      if (savedInsights) {
+        setInsights(JSON.parse(savedInsights));
+      }
+    } catch (error) {
+      console.error('Error loading saved insights:', error);
+    }
+  }, []);
 
   const generateInsights = useCallback(async (history) => {
     setLoading(true);
@@ -27,6 +39,8 @@ export function useInsights() {
 
       const data = await response.json();
       setInsights(data);
+      // Save insights to localStorage
+      localStorage.setItem('foodInsights', JSON.stringify(data));
     } catch (err) {
       console.error('Error generating insights:', err);
       setError(err.message);
