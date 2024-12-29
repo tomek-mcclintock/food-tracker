@@ -47,7 +47,7 @@ export function useFoodHistory() {
     } catch (error) {
       console.error('Error updating entry:', error);
     }
-  }, [updateInFirestore, getEntries]);
+  }, [updateInFirestore, getEntries]); //updated
 
   const deleteEntry = useCallback(async (id) => {
     try {
