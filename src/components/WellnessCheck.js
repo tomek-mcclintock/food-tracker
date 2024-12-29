@@ -1,4 +1,3 @@
-// src/components/WellnessCheck.js
 "use client"
 
 import { useState } from 'react';
@@ -12,7 +11,7 @@ export default function WellnessCheck({ onClose, onSubmit }) {
     if (!selectedStomach || !selectedEnergy) return;
     
     onSubmit({
-      date: new Date().toLocaleString(),
+      date: new Date().toISOString(), // Changed from toLocaleString to toISOString
       type: 'wellness',
       stomach: selectedStomach,
       energy: selectedEnergy
