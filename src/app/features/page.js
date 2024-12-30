@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import FeatureCard from '@/components/features/FeatureCard';
+import NewFeatureModal from '@/components/features/NewFeatureModal';
 
 const initialFeatures = [
   {
@@ -96,6 +97,15 @@ export default function Features() {
     }));
   };
 
+  const handleNewFeature = (newFeature) => {
+    const featureWithId = {
+      ...newFeature,
+      id: Math.max(...features.map(f => f.id)) + 1
+    };
+    setFeatures([...features, featureWithId]);
+    setShowNewFeature(false);
+  };
+
   return (
     <div className="max-w-2xl mx-auto pb-24 px-4">
       <div className="flex justify-between items-center mb-6">
@@ -121,11 +131,11 @@ export default function Features() {
           ))}
       </div>
 
-      {/* Add new feature form - to be implemented */}
       {showNewFeature && (
-        <div>
-          {/* Form will go here */}
-        </div>
+        <NewFeatureModal
+          onClose={() => setShowNewFeature(false)}
+          onSubmit={handleNewFeature}
+        />
       )}
     </div>
   );
