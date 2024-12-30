@@ -23,10 +23,10 @@ const BottomNav = () => {
       />
       
       <div className="fixed bottom-0 left-0 right-0 h-16 bg-white border-t z-40">
-        <div className="max-w-lg mx-auto h-full flex items-center justify-around px-4">
+        <div className="max-w-lg mx-auto h-full flex items-center justify-between px-4">
           <Link 
             href="/features" 
-            className={`flex flex-col items-center p-2 ${pathname === '/features' ? 'text-blue-500' : 'text-gray-500'}`}
+            className={`flex flex-col items-center w-16 p-2 ${pathname === '/features' ? 'text-blue-500' : 'text-gray-500'}`}
           >
             <Sparkles className="w-6 h-6" />
             <span className="text-xs mt-0.5">Features</span>
@@ -34,7 +34,7 @@ const BottomNav = () => {
           
           <Link 
             href="/history" 
-            className={`flex flex-col items-center p-2 ${pathname === '/history' ? 'text-blue-500' : 'text-gray-500'}`}
+            className={`flex flex-col items-center w-16 p-2 ${pathname === '/history' ? 'text-blue-500' : 'text-gray-500'}`}
           >
             <History className="w-6 h-6" />
             <span className="text-xs mt-0.5">History</span>
@@ -51,7 +51,7 @@ const BottomNav = () => {
           
           <Link 
             href="/insights" 
-            className={`flex flex-col items-center p-2 ${pathname === '/insights' ? 'text-blue-500' : 'text-gray-500'}`}
+            className={`flex flex-col items-center w-16 p-2 ${pathname === '/insights' ? 'text-blue-500' : 'text-gray-500'}`}
           >
             <LineChart className="w-6 h-6" />
             <span className="text-xs mt-0.5">Insights</span>
@@ -59,7 +59,7 @@ const BottomNav = () => {
           
           <Link 
             href="/profile" 
-            className={`flex flex-col items-center p-2 ${pathname === '/profile' ? 'text-blue-500' : 'text-gray-500'}`}
+            className={`flex flex-col items-center w-16 p-2 ${pathname === '/profile' ? 'text-blue-500' : 'text-gray-500'}`}
           >
             <User className="w-6 h-6" />
             <span className="text-xs mt-0.5">Profile</span>
