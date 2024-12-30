@@ -22,47 +22,49 @@ const BottomNav = () => {
         onCheckIn={() => setShowWellnessCheck(true)}
       />
       
-      <div className="fixed bottom-0 left-0 right-0 h-16 bg-white border-t flex items-center justify-around z-40">
-        <Link 
-          href="/features" 
-          className={`flex flex-col items-center p-2 ${pathname === '/features' ? 'text-blue-500' : 'text-gray-500'}`}
-        >
-          <Sparkles size={24} />
-          <span className="text-xs">Features</span>
-        </Link>
-        
-        <Link 
-          href="/history" 
-          className={`flex flex-col items-center p-2 ${pathname === '/history' ? 'text-blue-500' : 'text-gray-500'}`}
-        >
-          <History size={24} />
-          <span className="text-xs">History</span>
-        </Link>
-        
-        <button
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className={`relative -mt-6 rounded-full bg-blue-500 p-4 text-white shadow-lg transition-transform ${
-            isMenuOpen ? 'rotate-45' : ''
-          }`}
-        >
-          <Plus size={24} />
-        </button>
-        
-        <Link 
-          href="/insights" 
-          className={`flex flex-col items-center p-2 ${pathname === '/insights' ? 'text-blue-500' : 'text-gray-500'}`}
-        >
-          <LineChart size={24} />
-          <span className="text-xs">Insights</span>
-        </Link>
-        
-        <Link 
-          href="/profile" 
-          className={`flex flex-col items-center p-2 ${pathname === '/profile' ? 'text-blue-500' : 'text-gray-500'}`}
-        >
-          <User size={24} />
-          <span className="text-xs">Profile</span>
-        </Link>
+      <div className="fixed bottom-0 left-0 right-0 h-16 bg-white border-t z-40">
+        <div className="max-w-lg mx-auto h-full flex items-center justify-around px-4">
+          <Link 
+            href="/features" 
+            className={`flex flex-col items-center p-2 ${pathname === '/features' ? 'text-blue-500' : 'text-gray-500'}`}
+          >
+            <Sparkles className="w-6 h-6" />
+            <span className="text-xs mt-0.5">Features</span>
+          </Link>
+          
+          <Link 
+            href="/history" 
+            className={`flex flex-col items-center p-2 ${pathname === '/history' ? 'text-blue-500' : 'text-gray-500'}`}
+          >
+            <History className="w-6 h-6" />
+            <span className="text-xs mt-0.5">History</span>
+          </Link>
+          
+          <button
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className={`relative -mt-6 rounded-full bg-blue-500 p-4 text-white shadow-lg transition-transform ${
+              isMenuOpen ? 'rotate-45' : ''
+            }`}
+          >
+            <Plus className="w-6 h-6" />
+          </button>
+          
+          <Link 
+            href="/insights" 
+            className={`flex flex-col items-center p-2 ${pathname === '/insights' ? 'text-blue-500' : 'text-gray-500'}`}
+          >
+            <LineChart className="w-6 h-6" />
+            <span className="text-xs mt-0.5">Insights</span>
+          </Link>
+          
+          <Link 
+            href="/profile" 
+            className={`flex flex-col items-center p-2 ${pathname === '/profile' ? 'text-blue-500' : 'text-gray-500'}`}
+          >
+            <User className="w-6 h-6" />
+            <span className="text-xs mt-0.5">Profile</span>
+          </Link>
+        </div>
       </div>
 
       {showWellnessCheck && (
