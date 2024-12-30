@@ -11,11 +11,6 @@ export default function Features() {
   const [showNewFeature, setShowNewFeature] = useState(false);
   const { features, loading, handleVote, addFeature } = useFeatures();
 
-  const handleNewFeature = (newFeature) => {
-    addFeature(newFeature);
-    setShowNewFeature(false);
-  };
-
   if (loading) {
     return (
       <div className="max-w-2xl mx-auto pb-24 px-4">
@@ -39,7 +34,7 @@ export default function Features() {
 
       <div className="space-y-3">
         {features
-          .sort((a, b) => b.votes - a.votes)
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
           .map(feature => (
             <FeatureCard
               key={feature.id}
@@ -52,7 +47,10 @@ export default function Features() {
       {showNewFeature && (
         <NewFeatureModal
           onClose={() => setShowNewFeature(false)}
-          onSubmit={handleNewFeature}
+          onSubmit={(newFeature) => {
+            addFeature(newFeature);
+            setShowNewFeature(false);
+          }}
         />
       )}
     </div>
