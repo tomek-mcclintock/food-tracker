@@ -1,12 +1,13 @@
 "use client"
 
 import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Camera, ImagePlus, Type, Barcode, History, CheckCircle } from 'lucide-react';
 
 const AddOptionsMenu = ({ isOpen, onClose, onCheckIn }) => {
   const [isRendered, setIsRendered] = useState(false);
-
+  const router = useRouter();
+  
   useEffect(() => {
     if (isOpen) {
       setIsRendered(true);
@@ -18,12 +19,43 @@ const AddOptionsMenu = ({ isOpen, onClose, onCheckIn }) => {
     }
   }, [isOpen]);
 
+  const handleOptionClick = (option) => {
+    onClose();
+    if (option.action) {
+      option.action();
+    } else if (option.href) {
+      router.push(option.href);
+    }
+  };
+
   const options = [
-    { icon: <Camera className="w-6 h-6" />, label: 'Take Photo', href: '/add?mode=camera' },
-    { icon: <ImagePlus className="w-6 h-6" />, label: 'Upload Photo', href: '/add?mode=upload' },
-    { icon: <Type className="w-6 h-6" />, label: 'Describe Food', href: '/add?mode=text' },
-    { icon: <Barcode className="w-6 h-6" />, label: 'Scan Barcode', href: '/add?mode=barcode' },
-    { icon: <History className="w-6 h-6" />, label: 'From History', href: '/add?mode=previous' },
+    { 
+      icon: <Camera className="w-6 h-6" />, 
+      label: 'Take Photo',
+      href: '/add?mode=camera',
+    },
+    { 
+      icon: <ImagePlus className="w-6 h-6" />, 
+      label: 'Upload Photo',
+      href: '/add?mode=upload',
+    },
+    { 
+      icon: <Type className="w-6 h-6" />, 
+      label: 'Describe Food',
+      href: '/add',
+    },
+    { 
+      icon: <Barcode className="w-6 h-6" />, 
+      label: 'Scan Barcode',
+      disabled: true,
+      comingSoon: true,
+    },
+    { 
+      icon: <History className="w-6 h-6" />, 
+      label: 'From History',
+      disabled: true,
+      comingSoon: true,
+    },
   ];
 
   if (!isRendered && !isOpen) return null;
@@ -47,27 +79,34 @@ const AddOptionsMenu = ({ isOpen, onClose, onCheckIn }) => {
         <div className="bg-white rounded-2xl shadow-2xl p-2 w-72">
           <div className="grid gap-1">
             {options.map((option, index) => (
-              <Link
+              <button
                 key={index}
-                href={option.href}
-                className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 transition-all duration-200 hover:shadow-md active:scale-98"
-                onClick={onClose}
+                className={`flex items-center gap-3 p-2.5 rounded-xl transition-all duration-200 w-full text-left
+                  ${option.disabled 
+                    ? 'opacity-70 cursor-default' 
+                    : 'hover:bg-gray-50 hover:shadow-md active:scale-98'
+                  }`}
+                onClick={() => !option.disabled && handleOptionClick(option)}
+                disabled={option.disabled}
               >
                 <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center shadow-sm">
                   <div className="text-blue-600">
                     {option.icon}
                   </div>
                 </div>
-                <span className="font-medium text-gray-700">{option.label}</span>
-              </Link>
+                <div>
+                  <span className="font-medium text-gray-700 block">{option.label}</span>
+                  {option.comingSoon && (
+                    <span className="text-xs text-gray-400">Coming soon</span>
+                  )}
+                </div>
+              </button>
             ))}
 
             {/* Separate Check In option */}
-            <Link
-              href="#"
-              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-green-50 transition-all duration-200 hover:shadow-md active:scale-98 mt-1 border-t border-gray-100 pt-3"
-              onClick={(e) => {
-                e.preventDefault();
+            <button
+              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-green-50 transition-all duration-200 hover:shadow-md active:scale-98 mt-1 border-t border-gray-100 pt-3 w-full text-left"
+              onClick={() => {
                 onClose();
                 onCheckIn();
               }}
@@ -78,7 +117,7 @@ const AddOptionsMenu = ({ isOpen, onClose, onCheckIn }) => {
                 </div>
               </div>
               <span className="font-medium text-green-700">Check In</span>
-            </Link>
+            </button>
           </div>
         </div>
         {/* Decorative bottom notch */}
