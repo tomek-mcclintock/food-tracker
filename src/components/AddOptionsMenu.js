@@ -72,7 +72,7 @@ const AddOptionsMenu = ({ isOpen, onClose, onCheckIn }) => {
       
       {/* Menu */}
       <div 
-        className={`fixed bottom-24 left-1/2 z-30 ${
+        className={`fixed bottom-24 left-0 right-0 flex justify-center z-30 ${
           isOpen ? 'animate-slide-up' : 'translate-y-full opacity-0'
         } transition-all duration-300 ease-out`}
       >
@@ -127,4 +127,4 @@ const AddOptionsMenu = ({ isOpen, onClose, onCheckIn }) => {
   );
 };
 
-export default AddOptionsMenu;  
+export default AddOptionsMenu;
