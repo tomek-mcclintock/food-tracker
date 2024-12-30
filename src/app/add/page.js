@@ -1,16 +1,15 @@
+// src/app/add/page.js
 "use client"
 
-import React, { useState, useRef } from 'react';
-import { Info, Loader2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useFoodHistory } from '@/hooks/useFoodHistory';
 import { useAnalysis } from '@/hooks/useAnalysis';
 import SuccessToast from '@/components/SuccessToast';
-import InputSection from '@/components/food/InputSection';
-import CameraSection from '@/components/food/CameraSection';
+import ModeSelector from '@/components/food/modes/ModeSelector';
 import ResultsSection from '@/components/food/ResultsSection';
 
-// Add the helper function here
 const getMealType = (date) => {
   const hour = date.getHours();
   if (hour < 11) return 'Breakfast';
@@ -20,42 +19,26 @@ const getMealType = (date) => {
 };
 
 const AddFood = () => {
-  const [showCamera, setShowCamera] = useState(false);
   const [photo, setPhoto] = useState(null);
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const [error, setError] = useState(null);
   
-  const webcamRef = useRef(null);
   const { addEntry } = useFoodHistory();
   const { analyzing, results, analyzeFood, setResults } = useAnalysis();
 
-  const handlePhotoCapture = () => {
-    const imageSrc = webcamRef.current?.getScreenshot();
-    if (imageSrc) {
-      setPhoto(imageSrc);
-      setShowCamera(false);
-    }
-  };
-
-  const handleFileUpload = (file) => {
-    if (file.size > 5 * 1024 * 1024) {
-      setError('Image too large. Please choose an image under 5MB.');
-      return;
-    }
-    const reader = new FileReader();
-    reader.onloadend = () => setPhoto(reader.result);
-    reader.readAsDataURL(file);
+  const handlePhotoCapture = (imageSrc) => {
+    setPhoto(imageSrc);
   };
 
   const handleSave = (resultsToSave) => {
     const now = new Date();
     const newEntry = {
-      date: now.toISOString(), // Use ISO format instead of toLocaleString
+      date: now.toISOString(),
       food: resultsToSave.mainItem,
       ingredients: resultsToSave.ingredients.join(", "),
       sensitivities: resultsToSave.sensitivities || [],
       type: 'food',
-      mealType: getMealType(now) // Add this helper function
+      mealType: getMealType(now)
     };
     
     const success = addEntry(newEntry);
@@ -65,7 +48,7 @@ const AddFood = () => {
       setTimeout(() => {
         setShowSaveSuccess(false);
         resetForm();
-      }, 1500); // Increased from 1000 to 1500 to make the feedback more visible
+      }, 1500);
     } else {
       setError('Failed to save entry. Please try again.');
       setTimeout(() => setError(null), 3000);
@@ -75,9 +58,6 @@ const AddFood = () => {
   const resetForm = () => {
     setPhoto(null);
     setResults(null);
-    if (document.getElementById('food-description')) {
-      document.getElementById('food-description').value = '';
-    }
   };
 
   return (
@@ -85,18 +65,9 @@ const AddFood = () => {
       {showSaveSuccess && <SuccessToast message="Saved!" />}
 
       {!photo && !analyzing && !results && (
-        <InputSection 
+        <ModeSelector 
+          onImageCapture={handlePhotoCapture}
           onAnalyze={(description) => analyzeFood(description, null)}
-          onCameraOpen={() => setShowCamera(true)}
-          onFileSelect={() => document.getElementById('file-upload').click()}
-        />
-      )}
-
-      {showCamera && (
-        <CameraSection
-          webcamRef={webcamRef}
-          onCapture={handlePhotoCapture}
-          onClose={() => setShowCamera(false)}
         />
       )}
 
@@ -140,20 +111,11 @@ const AddFood = () => {
       {results && (
         <ResultsSection
           results={results}
-          onEdit={() => {}} // Add edit functionality if needed
+          onEdit={() => {}}
           onSave={handleSave}
           onStartOver={resetForm}
         />
       )}
-
-      <input
-        id="file-upload"
-        type="file"
-        accept="image/jpeg,image/png"
-        className="hidden"
-        onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
-      />
-
 
       {error && (
         <div className="fixed bottom-20 left-4 right-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl shadow-lg">

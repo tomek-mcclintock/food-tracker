@@ -127,4 +127,4 @@ const AddOptionsMenu = ({ isOpen, onClose, onCheckIn }) => {
   );
 };
 
-export default AddOptionsMenu;
+export default AddOptionsMenu;  
