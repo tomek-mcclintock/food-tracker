@@ -40,9 +40,12 @@ const AddOptionsMenu = ({ isOpen, onClose }) => {
       
       {/* Menu */}
       <div 
-        className={`fixed bottom-24 left-1/2 -translate-x-1/2 z-30 transition-transform duration-300 ${
-          isOpen ? 'translate-y-0' : 'translate-y-full'
-        }`}
+        className={`fixed bottom-24 left-1/2 -translate-x-1/2 z-30 transition-all duration-300 ease-out transform
+          ${isOpen ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}
+        style={{
+          transitionProperty: 'transform, opacity',
+          willChange: 'transform, opacity'
+        }}
       >
         <div className="bg-white rounded-2xl shadow-2xl p-3 w-72">
           <div className="grid gap-2">
@@ -52,6 +55,11 @@ const AddOptionsMenu = ({ isOpen, onClose }) => {
                 href={option.href}
                 className="flex items-center gap-4 p-3.5 rounded-xl hover:bg-gray-50 transition-all duration-200 hover:shadow-md active:scale-98"
                 onClick={onClose}
+                style={{
+                  transitionDelay: `${50 * index}ms`,
+                  opacity: isOpen ? 1 : 0,
+                  transform: isOpen ? 'translateY(0)' : 'translateY(10px)'
+                }}
               >
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center shadow-sm">
                   <div className="text-blue-600">
