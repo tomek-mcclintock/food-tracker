@@ -5,14 +5,22 @@ import { History, Plus, User, LineChart } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import AddOptionsMenu from './AddOptionsMenu';
+import WellnessCheck from './WellnessCheck';
+import { useFoodHistory } from '@/hooks/useFoodHistory';
 
 const BottomNav = () => {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showWellnessCheck, setShowWellnessCheck] = useState(false);
+  const { addEntry } = useFoodHistory();
 
   return (
     <>
-      <AddOptionsMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+      <AddOptionsMenu 
+        isOpen={isMenuOpen} 
+        onClose={() => setIsMenuOpen(false)}
+        onCheckIn={() => setShowWellnessCheck(true)}
+      />
       
       <div className="fixed bottom-0 left-0 right-0 h-16 bg-white border-t flex items-center justify-around z-40">
         <Link 
@@ -23,7 +31,6 @@ const BottomNav = () => {
           <span className="text-xs">History</span>
         </Link>
         
-        {/* Center Add Button */}
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           className={`relative -mt-6 rounded-full bg-blue-500 p-4 text-white shadow-lg transition-transform ${
@@ -49,6 +56,16 @@ const BottomNav = () => {
           <span className="text-xs">Profile</span>
         </Link>
       </div>
+
+      {showWellnessCheck && (
+        <WellnessCheck
+          onClose={() => setShowWellnessCheck(false)}
+          onSubmit={(entry) => {
+            addEntry(entry);
+            setShowWellnessCheck(false);
+          }}
+        />
+      )}
     </>
   );
 };

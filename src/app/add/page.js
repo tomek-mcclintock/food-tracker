@@ -3,7 +3,6 @@
 import React, { useState, useRef } from 'react';
 import { Info, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import WellnessCheck from '@/components/WellnessCheck';
 import { useFoodHistory } from '@/hooks/useFoodHistory';
 import { useAnalysis } from '@/hooks/useAnalysis';
 import SuccessToast from '@/components/SuccessToast';
@@ -22,7 +21,6 @@ const getMealType = (date) => {
 
 const AddFood = () => {
   const [showCamera, setShowCamera] = useState(false);
-  const [showWellnessCheck, setShowWellnessCheck] = useState(false);
   const [photo, setPhoto] = useState(null);
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const [error, setError] = useState(null);
@@ -85,15 +83,6 @@ const AddFood = () => {
   return (
     <div className="max-w-lg mx-auto pb-24 px-4">
       {showSaveSuccess && <SuccessToast message="Saved!" />}
-
-      <Button 
-        onClick={() => setShowWellnessCheck(true)}
-        size="lg"
-        className="w-full bg-gradient-to-r from-green-400 to-emerald-500 hover:from-green-500 hover:to-emerald-600 text-white shadow-lg mb-6 py-6 text-lg font-medium rounded-2xl transition-all duration-200 hover:shadow-xl"
-      >
-        <Info className="w-6 h-6 mr-2" />
-        How did you feel today?
-      </Button>
 
       {!photo && !analyzing && !results && (
         <InputSection 
@@ -165,15 +154,6 @@ const AddFood = () => {
         onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
       />
 
-      {showWellnessCheck && (
-        <WellnessCheck
-          onClose={() => setShowWellnessCheck(false)}
-          onSubmit={(entry) => {
-            addEntry(entry);
-            setShowWellnessCheck(false);
-          }}
-        />
-      )}
 
       {error && (
         <div className="fixed bottom-20 left-4 right-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl shadow-lg">

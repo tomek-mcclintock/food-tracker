@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Camera, ImagePlus, Type, Barcode, History } from 'lucide-react';
+import { Camera, ImagePlus, Type, Barcode, History, CheckCircle } from 'lucide-react';
 
-const AddOptionsMenu = ({ isOpen, onClose }) => {
+const AddOptionsMenu = ({ isOpen, onClose, onCheckIn }) => {
   const [isRendered, setIsRendered] = useState(false);
 
   useEffect(() => {
@@ -44,16 +44,16 @@ const AddOptionsMenu = ({ isOpen, onClose }) => {
           isOpen ? 'animate-slide-up' : 'translate-y-full opacity-0'
         } transition-all duration-300 ease-out`}
       >
-        <div className="bg-white rounded-2xl shadow-2xl p-3 w-72">
-          <div className="grid gap-2">
+        <div className="bg-white rounded-2xl shadow-2xl p-2 w-72">
+          <div className="grid gap-1">
             {options.map((option, index) => (
               <Link
                 key={index}
                 href={option.href}
-                className="flex items-center gap-4 p-3.5 rounded-xl hover:bg-gray-50 transition-all duration-200 hover:shadow-md active:scale-98"
+                className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 transition-all duration-200 hover:shadow-md active:scale-98"
                 onClick={onClose}
               >
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center shadow-sm">
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center shadow-sm">
                   <div className="text-blue-600">
                     {option.icon}
                   </div>
@@ -61,6 +61,24 @@ const AddOptionsMenu = ({ isOpen, onClose }) => {
                 <span className="font-medium text-gray-700">{option.label}</span>
               </Link>
             ))}
+
+            {/* Separate Check In option */}
+            <Link
+              href="#"
+              className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-green-50 transition-all duration-200 hover:shadow-md active:scale-98 mt-1 border-t border-gray-100 pt-3"
+              onClick={(e) => {
+                e.preventDefault();
+                onClose();
+                onCheckIn();
+              }}
+            >
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center shadow-sm">
+                <div className="text-green-600">
+                  <CheckCircle className="w-6 h-6" />
+                </div>
+              </div>
+              <span className="font-medium text-green-700">Check In</span>
+            </Link>
           </div>
         </div>
         {/* Decorative bottom notch */}
