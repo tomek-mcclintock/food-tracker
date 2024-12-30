@@ -3,6 +3,7 @@
 import { format } from 'date-fns';
 import { Pencil, Trash2, CheckCircle2, Coffee, UtensilsCrossed } from 'lucide-react';
 
+// Component to show the appropriate icon for each meal type
 const MealIcon = ({ mealType }) => {
   switch (mealType) {
     case 'Breakfast':
@@ -10,14 +11,16 @@ const MealIcon = ({ mealType }) => {
     case 'Lunch':
     case 'Dinner':
       return <UtensilsCrossed className="w-4 h-4 text-blue-500" />;
-    default:
+    default: // Snack
       return <Coffee className="w-4 h-4 text-purple-500" />;
   }
 };
 
+// Component for individual entries (both food and wellness)
 const Entry = ({ entry, onEdit, onDelete }) => {
   const time = format(new Date(entry.date), 'h:mm a');
 
+  // Wellness entry display
   if (entry.type === 'wellness') {
     return (
       <div className="ml-4 mb-6">
@@ -31,14 +34,12 @@ const Entry = ({ entry, onEdit, onDelete }) => {
             >
               <Pencil className="w-3.5 h-3.5 text-gray-500" />
             </button>
-            {onDelete && (
-              <button
-                onClick={() => onDelete(entry)}
-                className="p-1 hover:bg-gray-100 rounded-full"
-              >
-                <Trash2 className="w-3.5 h-3.5 text-gray-500" />
-              </button>
-            )}
+            <button
+              onClick={() => onDelete(entry)}
+              className="p-1 hover:bg-gray-100 rounded-full"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-gray-500" />
+            </button>
           </div>
         </div>
         <div className="ml-6 space-y-1">
@@ -49,6 +50,7 @@ const Entry = ({ entry, onEdit, onDelete }) => {
     );
   }
 
+  // Food entry display
   return (
     <div className="ml-4 mb-6">
       <div className="flex items-center gap-2 mb-2">
@@ -89,10 +91,11 @@ const Entry = ({ entry, onEdit, onDelete }) => {
   );
 };
 
+// Main component that displays all entries for a single day
 export default function DaySection({ date, wellness, foods, onEditWellness, onEditFood, onDeleteFood, onDeleteWellness }) {
   const formattedDate = format(date, 'EEE d MMM yyyy');
   
-  // Combine all entries for the day and sort by time
+  // Combine and sort all entries for the day chronologically
   const allEntries = [
     ...(wellness || []),
     ...foods
@@ -106,7 +109,7 @@ export default function DaySection({ date, wellness, foods, onEditWellness, onEd
           key={index}
           entry={entry}
           onEdit={entry.type === 'wellness' ? onEditWellness : onEditFood}
-          onDelete={entry.type === 'wellness' ? onDeleteWellness : (entry.type === 'food' ? () => onDeleteFood(entry) : null)}
+          onDelete={entry.type === 'wellness' ? () => onDeleteWellness(entry) : () => onDeleteFood(entry)}
         />
       ))}
       <div className="border-b border-gray-200 mt-6"></div>
