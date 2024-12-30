@@ -1,4 +1,4 @@
-// src/app/features/page.jsj
+// src/app/features/page.js
 "use client"
 
 import React, { useState } from 'react';
