@@ -40,9 +40,9 @@ const AddOptionsMenu = ({ isOpen, onClose }) => {
       
       {/* Menu */}
       <div 
-        className={`fixed left-1/2 z-30 -translate-x-1/2 transition-all duration-300 ease-out ${
-          isOpen ? 'bottom-24 opacity-100' : 'bottom-0 opacity-0'
-        }`}
+        className={`fixed bottom-24 left-1/2 z-30 ${
+          isOpen ? 'animate-slide-up' : 'translate-y-full opacity-0'
+        } transition-all duration-300 ease-out`}
       >
         <div className="bg-white rounded-2xl shadow-2xl p-3 w-72">
           <div className="grid gap-2">
