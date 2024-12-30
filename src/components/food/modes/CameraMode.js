@@ -1,20 +1,13 @@
 // src/components/food/modes/CameraMode.js
 "use client"
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import Webcam from 'react-webcam';
 import { Button } from '@/components/ui/button';
 import { Camera, X } from 'lucide-react';
 
 const CameraMode = ({ onCapture, onCancel }) => {
   const webcamRef = useRef(null);
-
-  useEffect(() => {
-    // Auto-focus when component mounts
-    if (webcamRef.current) {
-      webcamRef.current.focus();
-    }
-  }, []);
 
   const handleCapture = () => {
     const imageSrc = webcamRef.current?.getScreenshot();
