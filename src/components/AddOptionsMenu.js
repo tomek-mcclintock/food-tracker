@@ -38,43 +38,33 @@ const AddOptionsMenu = ({ isOpen, onClose }) => {
         onClick={onClose}
       />
       
-      {/* Menu Container */}
+      {/* Menu */}
       <div 
-        className="fixed bottom-0 left-0 right-0 z-30 pointer-events-none"
-        style={{ height: 'calc(100vh - 4rem)' }} // Ensure it doesn't go under navbar
+        className={`fixed left-1/2 z-30 -translate-x-1/2 transition-all duration-300 ease-out ${
+          isOpen ? 'bottom-24 opacity-100' : 'bottom-0 opacity-0'
+        }`}
       >
-        {/* Menu Content */}
-        <div 
-          className={`absolute bottom-8 left-1/2 -translate-x-1/2 transition-all duration-300 ease-out transform pointer-events-auto
-            ${isOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}
-        >
-          <div className="bg-white rounded-2xl shadow-2xl p-3 w-72">
-            <div className="grid gap-2">
-              {options.map((option, index) => (
-                <Link
-                  key={index}
-                  href={option.href}
-                  className="flex items-center gap-4 p-3.5 rounded-xl hover:bg-gray-50 transition-all duration-200 hover:shadow-md active:scale-98"
-                  onClick={onClose}
-                  style={{
-                    transitionDelay: `${50 * index}ms`,
-                    opacity: isOpen ? 1 : 0,
-                    transform: isOpen ? 'translateY(0)' : 'translateY(10px)'
-                  }}
-                >
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center shadow-sm">
-                    <div className="text-blue-600">
-                      {option.icon}
-                    </div>
+        <div className="bg-white rounded-2xl shadow-2xl p-3 w-72">
+          <div className="grid gap-2">
+            {options.map((option, index) => (
+              <Link
+                key={index}
+                href={option.href}
+                className="flex items-center gap-4 p-3.5 rounded-xl hover:bg-gray-50 transition-all duration-200 hover:shadow-md active:scale-98"
+                onClick={onClose}
+              >
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center shadow-sm">
+                  <div className="text-blue-600">
+                    {option.icon}
                   </div>
-                  <span className="font-medium text-gray-700">{option.label}</span>
-                </Link>
-              ))}
-            </div>
+                </div>
+                <span className="font-medium text-gray-700">{option.label}</span>
+              </Link>
+            ))}
           </div>
-          {/* Decorative bottom notch */}
-          <div className="w-4 h-4 bg-white transform rotate-45 translate-y-1/2 mx-auto -mt-2 shadow-lg" />
         </div>
+        {/* Decorative bottom notch */}
+        <div className="w-4 h-4 bg-white transform rotate-45 translate-y-1/2 mx-auto -mt-2 shadow-lg" />
       </div>
     </>
   );
