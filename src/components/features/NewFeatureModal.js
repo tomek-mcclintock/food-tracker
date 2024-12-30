@@ -32,83 +32,80 @@ const NewFeatureModal = ({ onClose, onSubmit }) => {
   };
 
   return (
-    <>
+    <div className="fixed inset-0 z-50">
       {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/50 z-50"
+        className="absolute inset-0 bg-black/50"
         onClick={onClose}
       />
       
-      {/* Modal Container */}
-      <div className="fixed inset-0 z-50 overflow-y-auto">
-        <div className="flex min-h-full items-center justify-center p-4">
-          {/* Modal Content */}
-          <div className="w-full max-w-lg bg-white rounded-2xl shadow-xl relative animate-fade-in">
-            <div className="flex justify-between items-center p-4 border-b">
-              <h2 className="text-xl font-semibold">Suggest a Feature</h2>
-              <Button variant="ghost" size="sm" onClick={onClose}>
-                <X className="w-5 h-5" />
-              </Button>
+      {/* Modal */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-lg">
+        <div className="bg-white rounded-2xl shadow-xl animate-fade-in">
+          <div className="flex justify-between items-center p-4 border-b">
+            <h2 className="text-xl font-semibold">Suggest a Feature</h2>
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              <X className="w-5 h-5" />
+            </Button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="p-4 space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">Title</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full p-3 border rounded-xl"
+                placeholder="Brief title for your feature idea"
+                maxLength={100}
+              />
+              <div className="text-xs text-gray-500 mt-1">
+                {title.length}/100 characters
+              </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-4 space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Title</label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="w-full p-3 border rounded-xl"
-                  placeholder="Brief title for your feature idea"
-                  maxLength={100}
-                />
-                <div className="text-xs text-gray-500 mt-1">
-                  {title.length}/100 characters
-                </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Description</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full p-3 border rounded-xl resize-none"
+                rows={4}
+                placeholder="Explain your idea in detail..."
+                maxLength={500}
+              />
+              <div className="text-xs text-gray-500 mt-1">
+                {description.length}/500 characters
               </div>
+            </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">Description</label>
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full p-3 border rounded-xl resize-none"
-                  rows={4}
-                  placeholder="Explain your idea in detail..."
-                  maxLength={500}
-                />
-                <div className="text-xs text-gray-500 mt-1">
-                  {description.length}/500 characters
-                </div>
+            {error && (
+              <div className="text-red-500 text-sm">
+                {error}
               </div>
+            )}
 
-              {error && (
-                <div className="text-red-500 text-sm">
-                  {error}
-                </div>
-              )}
-
-              <div className="flex gap-3 pt-2">
-                <Button
-                  type="submit"
-                  className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
-                >
-                  Submit
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1"
-                  onClick={onClose}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          </div>
+            <div className="flex gap-3 pt-2">
+              <Button
+                type="submit"
+                className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
+              >
+                Submit
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
+                onClick={onClose}
+              >
+                Cancel
+              </Button>
+            </div>
+          </form>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
