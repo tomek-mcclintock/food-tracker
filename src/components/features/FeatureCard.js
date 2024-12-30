@@ -1,12 +1,13 @@
-// src/components/features/FeatureCard.js
 "use client"
 
 import React, { useState } from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/context/AuthContext';
 
 const FeatureCard = ({ feature, onVote }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { user } = useAuth();
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100">
@@ -19,7 +20,11 @@ const FeatureCard = ({ feature, onVote }) => {
           <Button
             onClick={(e) => {
               e.stopPropagation();
-              onVote(feature.id);
+              if (user) {
+                onVote(feature.id);
+              } else {
+                alert('Please log in to vote');
+              }
             }}
             variant="ghost"
             className={`px-3 py-2 h-auto flex flex-col gap-1 ${
