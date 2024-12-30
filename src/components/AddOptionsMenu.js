@@ -1,31 +1,50 @@
 // src/components/AddOptionsMenu.js
 "use client"
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Camera, ImagePlus, Type, Barcode, History } from 'lucide-react';
 
 const AddOptionsMenu = ({ isOpen, onClose }) => {
+  const [isRendered, setIsRendered] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsRendered(true);
+    } else {
+      const timeout = setTimeout(() => {
+        setIsRendered(false);
+      }, 300); // Match this with CSS transition duration
+      return () => clearTimeout(timeout);
+    }
+  }, [isOpen]);
+
   const options = [
     { icon: <Camera className="w-6 h-6" />, label: 'Take Photo', href: '/add?mode=camera' },
     { icon: <ImagePlus className="w-6 h-6" />, label: 'Upload Photo', href: '/add?mode=upload' },
     { icon: <Type className="w-6 h-6" />, label: 'Describe Food', href: '/add?mode=text' },
     { icon: <Barcode className="w-6 h-6" />, label: 'Scan Barcode', href: '/add?mode=barcode' },
-    { icon: <History className="w-6 h-6" />, label: 'Previous Foods', href: '/add?mode=previous' },
+    { icon: <History className="w-6 h-6" />, label: 'From History', href: '/add?mode=previous' },
   ];
 
-  if (!isOpen) return null;
+  if (!isRendered && !isOpen) return null;
 
   return (
     <>
-      {/* Backdrop */}
+      {/* Backdrop with fade transition */}
       <div 
-        className="fixed inset-0 bg-black/50 z-40"
+        className={`fixed inset-0 bg-black transition-opacity duration-300 z-40 ${
+          isOpen ? 'opacity-50' : 'opacity-0'
+        }`}
         onClick={onClose}
       />
       
-      {/* Menu */}
-      <div className="fixed bottom-16 left-1/2 -translate-x-1/2 z-50 bg-white rounded-2xl shadow-xl p-2 w-64 animate-fade-in">
+      {/* Menu with slide-up animation */}
+      <div 
+        className={`fixed bottom-16 left-1/2 -translate-x-1/2 z-50 bg-white rounded-2xl shadow-xl p-2 w-64 transition-transform duration-300 ${
+          isOpen ? 'animate-slide-up' : 'translate-y-full opacity-0'
+        }`}
+      >
         <div className="grid gap-2">
           {options.map((option, index) => (
             <Link
