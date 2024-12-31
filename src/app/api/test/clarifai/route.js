@@ -40,14 +40,22 @@ export async function POST(request) {
     }
 
     const result = await response.json();
+    
+    // Log the raw response to see what we're getting
+    console.log('Raw Clarifai response:', JSON.stringify(result, null, 2));
+
+    // Lower the confidence threshold to 0.5 (50%)
     const concepts = result.outputs[0].data.concepts
-      .filter(concept => concept.value > 0.9)
+      .filter(concept => concept.value > 0.5)
       .map(concept => ({
         name: concept.name,
         confidence: concept.value
       }));
 
-    return NextResponse.json({ concepts });
+    return NextResponse.json({
+      concepts,
+      rawResponse: result // Include raw response for debugging
+    });
   } catch (error) {
     console.error('Server error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });

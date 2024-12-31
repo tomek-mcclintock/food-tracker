@@ -33,7 +33,7 @@ async function getClarifaiPredictions(imageBase64) {
 
   const result = await response.json();
   return result.outputs[0].data.concepts
-    .filter(concept => concept.value > 0.9)
+    .filter(concept => concept.value > 0.5)
     .map(concept => concept.name);
 }
 
