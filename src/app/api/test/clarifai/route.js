@@ -44,12 +44,12 @@ export async function POST(request) {
     // Log the raw response to see what we're getting
     console.log('Raw Clarifai response:', JSON.stringify(result, null, 2));
 
-    // Lower the confidence threshold to 0.5 (50%)
+    // Take top 5 predictions regardless of confidence
     const concepts = result.outputs[0].data.concepts
-      .filter(concept => concept.value > 0.5)
+      .slice(0, 5)  // Get top 5 predictions
       .map(concept => ({
         name: concept.name,
-        confidence: concept.value
+        confidence: (concept.value * 100).toFixed(1) + '%'  // Convert to percentage
       }));
 
     return NextResponse.json({

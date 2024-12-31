@@ -33,7 +33,7 @@ async function getClarifaiPredictions(imageBase64) {
 
   const result = await response.json();
   return result.outputs[0].data.concepts
-    .filter(concept => concept.value > 0.5)
+    .slice(0, 5)  // Get top 5 predictions
     .map(concept => concept.name);
 }
 
