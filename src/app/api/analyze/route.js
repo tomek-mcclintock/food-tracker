@@ -55,13 +55,13 @@ export async function POST(request) {
       }
     }
 
-    const enhancedPrompt = `${predictions.length > 0 ? `Automatic food detection has identified these items: ${predictions.join(', ')}. ` : ''}
+    const enhancedPrompt = `${predictions.length > 0 ? `Automatic food detection has identified these items: ${predictions.join(', ')}. THESE ITEMS MUST BE INCLUDED IN YOUR INGREDIENTS LIST. ` : ''}
 ${foodDescription}
 
-Analyze this food carefully and thoroughly. Return a JSON object with exactly this format:
+Please analyze this food INCLUDING ALL DETECTED ITEMS AS INGREDIENTS. Return a JSON object with exactly this format:
 {
-  "mainItem": "detailed name of the dish",
-  "ingredients": ["ingredient1", "ingredient2", ...],
+  "mainItem": "detailed name of the dish WITH ANY SIDES",
+  "ingredients": ["INCLUDE ALL DETECTED AND VISIBLE ITEMS HERE", "ingredient2", ...],
   "sensitivities": [
     "dairy",      // milk, cheese, butter, cream, yogurt
     "gluten",     // wheat, barley, rye
@@ -87,7 +87,11 @@ Analyze this food carefully and thoroughly. Return a JSON object with exactly th
 }
 
 Important:
-- Include ALL detected or described items
+- YOU MUST INCLUDE ALL AUTOMATICALLY DETECTED ITEMS IN THE INGREDIENTS LIST
+- If french fries were detected, list them as a separate ingredient
+- If multiple dishes are detected (like burger and fries), include them all in mainItem
+- Include both main and side dishes in ingredients list
+- The mainItem should reflect BOTH the main dish and sides (e.g., "Cheeseburger with French Fries")
 - Include common ingredients used in these dishes even if not visible
 - Include sensitivities for both main dishes and side items
 - Common relationships to remember:
