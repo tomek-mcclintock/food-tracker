@@ -48,7 +48,6 @@ export default function ResultsSection({ results, onSave, onStartOver }) {
 
   const handleSave = () => {
     onSave(currentResults);
-    router.push('/history');
   };
 
   return (

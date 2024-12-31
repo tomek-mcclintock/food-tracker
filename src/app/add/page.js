@@ -46,8 +46,8 @@ const AddFood = () => {
     try {
       addEntry(newEntry);
       setShowSaveSuccess(true);
+      // Only redirect after showing success message
       setTimeout(() => {
-        setShowSaveSuccess(false);
         router.push('/history');
       }, 500);
     } catch (err) {
