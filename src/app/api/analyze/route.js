@@ -32,9 +32,50 @@ async function getClarifaiPredictions(imageBase64) {
   }
 
   const result = await response.json();
-  return result.outputs[0].data.concepts
-    .slice(0, 5)  // Get top 5 predictions
-    .map(concept => concept.name);
+  const predictions = result.outputs[0].data.concepts;
+
+  // Get the highest confidence prediction
+  const topPrediction = predictions[0];
+  if (!topPrediction) return [];
+
+  // Only include other predictions if:
+  // 1. They're at least 50% as confident as the top prediction
+  // 2. They make sense as accompanying items (sides, toppings, etc.)
+  const relatedPredictions = predictions
+    .slice(1)
+    .filter(pred => {
+      // Must be at least 50% as confident as top prediction
+      const confidenceRatio = pred.value / topPrediction.value;
+      if (confidenceRatio < 0.5) return false;
+
+      // If it's very confident (>80% of top confidence), include it
+      if (confidenceRatio > 0.8) return true;
+
+      // Common pairs that make sense together
+      const commonPairs = {
+        hamburger: ['french fries', 'cheese', 'lettuce', 'tomato', 'bacon'],
+        cheeseburger: ['french fries', 'lettuce', 'tomato', 'bacon'],
+        'french fries': ['hamburger', 'cheeseburger', 'sandwich'],
+        sandwich: ['chips', 'french fries', 'pickle'],
+        pizza: ['cheese', 'pepperoni', 'tomato'],
+        salad: ['lettuce', 'tomato', 'cucumber', 'cheese'],
+        pasta: ['cheese', 'tomato', 'meat'],
+        chicken: ['french fries', 'rice', 'salad'],
+        rice: ['chicken', 'beef', 'vegetables'],
+        sushi: ['rice', 'fish', 'seafood']
+      };
+
+      // Check if this prediction makes sense with the top prediction
+      const topItem = topPrediction.name.toLowerCase();
+      const currentItem = pred.name.toLowerCase();
+      return commonPairs[topItem]?.includes(currentItem) || 
+             Object.entries(commonPairs).some(([main, sides]) => 
+               main === currentItem && sides.includes(topItem)
+             );
+    })
+    .map(pred => pred.name);
+
+  return [topPrediction.name, ...relatedPredictions];
 }
 
 export async function POST(request) {
@@ -55,8 +96,9 @@ export async function POST(request) {
       }
     }
 
-    const enhancedPrompt = `${predictions.length > 0 ? `Automatic food detection has identified these items: ${predictions.join(', ')}. Use these detections to help identify ingredients, but break down complete dishes into their components. ` : ''}
-${foodDescription}
+    const enhancedPrompt = `${predictions.length > 0 ? `Automatic food detection has identified these items: ${predictions.join(', ')}. ` : ''}
+${foodDescription ? `The user has also provided this description: ${foodDescription}. ` : ''}
+Use all this information, prioritizing the user's description when provided, to break down this food into its components.
 
 Please analyze this food and break it down into its component ingredients. Return a JSON object with exactly this format:
 {
