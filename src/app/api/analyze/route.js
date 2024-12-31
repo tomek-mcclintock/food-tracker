@@ -55,13 +55,17 @@ export async function POST(request) {
       }
     }
 
-    const enhancedPrompt = `${predictions.length > 0 ? `Automatic food detection has identified these items: ${predictions.join(', ')}. THESE ITEMS MUST BE INCLUDED IN YOUR INGREDIENTS LIST. ` : ''}
+    const enhancedPrompt = `${predictions.length > 0 ? `Automatic food detection has identified these items: ${predictions.join(', ')}. Use these detections to help identify ingredients, but break down complete dishes into their components. ` : ''}
 ${foodDescription}
 
-Please analyze this food INCLUDING ALL DETECTED ITEMS AS INGREDIENTS. Return a JSON object with exactly this format:
+Please analyze this food and break it down into its component ingredients. Return a JSON object with exactly this format:
 {
-  "mainItem": "detailed name of the dish WITH ANY SIDES",
-  "ingredients": ["INCLUDE ALL DETECTED AND VISIBLE ITEMS HERE", "ingredient2", ...],
+  "mainItem": "primary dish name with sides (e.g., 'Cheeseburger with French Fries')",
+  "ingredients": [
+    // List individual ingredients, not dish names
+    // Example: Instead of "cheeseburger", list "beef patty", "cheese", "bun"
+    // Example: Instead of "french fries", list "potatoes", "oil"
+  ],
   "sensitivities": [
     "dairy",      // milk, cheese, butter, cream, yogurt
     "gluten",     // wheat, barley, rye
@@ -87,13 +91,13 @@ Please analyze this food INCLUDING ALL DETECTED ITEMS AS INGREDIENTS. Return a J
 }
 
 Important:
-- YOU MUST INCLUDE ALL AUTOMATICALLY DETECTED ITEMS IN THE INGREDIENTS LIST
-- If french fries were detected, list them as a separate ingredient
-- If multiple dishes are detected (like burger and fries), include them all in mainItem
-- Include both main and side dishes in ingredients list
-- The mainItem should reflect BOTH the main dish and sides (e.g., "Cheeseburger with French Fries")
-- Include common ingredients used in these dishes even if not visible
-- Include sensitivities for both main dishes and side items
+- Break down detected dishes into their component ingredients
+- DO NOT list "hamburger" or "cheeseburger" as ingredients; instead list "beef patty", "cheese", "bun", etc.
+- DO NOT list "french fries" as an ingredient; instead list "potatoes", "oil"
+- Avoid repeating ingredients
+- Still use the detections to identify all components accurately
+- Include common preparation ingredients even if not visible (e.g., oil for frying)
+- Include sensitivities for all ingredients identified
 - Common relationships to remember:
   * French fries → nightshades (potatoes)
   * Chocolate desserts → caffeine
