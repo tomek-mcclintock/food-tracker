@@ -170,7 +170,9 @@ export default function EditEntry({ entry, onSave, onClose }) {
           <div>
             <label className="block text-sm font-medium mb-1">Sensitivities</label>
             <div className="flex flex-wrap gap-2">
-              {['dairy', 'gluten', 'nuts', 'soy', 'eggs', 'fish', 'shellfish', 'spicy', 'citrus', 'nightshades'].map((item) => (
+            {['dairy', 'gluten', 'nuts', 'soy', 'eggs', 'fish', 'shellfish', 
+                'nightshades', 'caffeine', 'histamine', 'sulfites', 'fructose', 'fodmap', 
+                'cruciferous', 'alliums', 'citrus', 'legumes', 'corn', 'salicylates', 'spicy'].map((item) => (
                 <button
                   key={item}
                   onClick={() => {

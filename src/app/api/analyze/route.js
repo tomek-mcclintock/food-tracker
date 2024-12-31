@@ -1,26 +1,107 @@
 import { NextResponse } from 'next/server';
 
+async function getClarifaiPredictions(imageBase64) {
+  const response = await fetch(
+    'https://api.clarifai.com/v2/models/food-item-recognition/versions/1d5fd481e0cf4826aa72ec3ff049e044/outputs',
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.CLARIFAI_PAT}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        user_app_id: {
+          user_id: process.env.CLARIFAI_USER_ID,
+          app_id: process.env.CLARIFAI_APP_ID
+        },
+        inputs: [
+          {
+            data: {
+              image: {
+                base64: imageBase64
+              }
+            }
+          }
+        ]
+      })
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(`Clarifai API error: ${response.status} ${response.statusText}`);
+  }
+
+  const result = await response.json();
+  return result.outputs[0].data.concepts
+    .slice(0, 5)  // Get top 5 predictions
+    .map(concept => concept.name);
+}
+
 export async function POST(request) {
   try {
     const body = await request.json();
-    
-    const originalText = body.messages[0].content[0].text;
-    
-    body.messages[0].content[0].text = `${originalText}
+    let foodDescription = body.messages[0].content[0].text;
+    let imageContent = body.messages[0].content.find(c => c.type === 'image');
+    let predictions = [];
 
-Analyze this food carefully and thoroughly. List all ingredients that:
-1. You can visually identify in the food
-2. Would typically be used in this dish's preparation
-3. Are basic cooking ingredients like salt, oil, or seasonings
+    // If there's an image, analyze it with Clarifai first
+    if (imageContent) {
+      try {
+        const imageBase64 = imageContent.source.data;
+        predictions = await getClarifaiPredictions(imageBase64);
+      } catch (error) {
+        console.error('Clarifai analysis failed:', error);
+        // Continue with original description if Clarifai fails
+      }
+    }
 
-Return a JSON object with exactly this format:
+    const enhancedPrompt = `${predictions.length > 0 ? `Automatic food detection has identified these items: ${predictions.join(', ')}. ` : ''}
+${foodDescription}
+
+Analyze this food carefully and thoroughly. Return a JSON object with exactly this format:
 {
   "mainItem": "detailed name of the dish",
   "ingredients": ["ingredient1", "ingredient2", ...],
-  "sensitivities": ["dairy", "gluten", "nuts", "soy", "eggs", "fish", "shellfish", "spicy", "citrus", "nightshades"]
+  "sensitivities": [
+    "dairy",      // milk, cheese, butter, cream, yogurt
+    "gluten",     // wheat, barley, rye
+    "nuts",       // all tree nuts and peanuts
+    "soy",        // soybeans and soy products
+    "eggs",
+    "fish",
+    "shellfish",
+    "nightshades", // potatoes, tomatoes, peppers, eggplant
+    "caffeine",    // coffee, tea, chocolate, cola
+    "histamine",   // aged cheeses, fermented foods, cured meats
+    "sulfites",    // wine, dried fruits, processed foods
+    "fructose",    // fruits, honey, HFCS
+    "fodmap",      // garlic, onion, wheat, certain fruits
+    "cruciferous", // broccoli, cauliflower, cabbage, brussels sprouts
+    "alliums",     // garlic, onions, leeks, chives
+    "citrus",      // oranges, lemons, limes, grapefruit
+    "legumes",     // beans, peas, lentils, peanuts
+    "corn",
+    "salicylates", // many fruits, vegetables, spices, mint
+    "spicy"        // chili peppers, hot spices
+  ]
 }
 
-Include sensitivities only if they are present in the dish. Be thorough with ingredients but only include relevant sensitivities.`;
+Important:
+- Include ALL detected or described items
+- Include common ingredients used in these dishes even if not visible
+- Include sensitivities for both main dishes and side items
+- Common relationships to remember:
+  * French fries → nightshades (potatoes)
+  * Chocolate desserts → caffeine
+  * Pickled/fermented items → histamine
+  * Sauces often contain alliums (garlic/onion)
+  * Many seasonings contain salicylates
+  * Pre-made sauces often contain sulfites
+  * Breads/buns contain gluten and often corn
+  * Most condiments contain FODMAP ingredients`;
+
+    // Replace original message content with enhanced prompt
+    body.messages[0].content[0].text = enhancedPrompt;
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',

@@ -46,7 +46,9 @@ export default function ResultsSection({ results, onSave, onStartOver }) {
             <div>
               <label className="block text-sm font-medium text-gray-600 mb-2">Sensitivities</label>
               <div className="flex flex-wrap gap-2">
-                {['dairy', 'gluten', 'nuts', 'soy', 'eggs', 'fish', 'shellfish', 'spicy', 'citrus', 'nightshades'].map((item) => (
+              {['dairy', 'gluten', 'nuts', 'soy', 'eggs', 'fish', 'shellfish', 
+                  'nightshades', 'caffeine', 'histamine', 'sulfites', 'fructose', 'fodmap', 
+                  'cruciferous', 'alliums', 'citrus', 'legumes', 'corn', 'salicylates', 'spicy'].map((item) => (
                   <button
                     key={item}
                     onClick={() => {
