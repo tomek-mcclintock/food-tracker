@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import EditEntry from '@/components/history/EditEntry';
 import { useRouter } from 'next/navigation';
+import { getMealType } from '@/lib/utils';
 
 
 export default function ResultsSection({ results, onSave, onStartOver }) {

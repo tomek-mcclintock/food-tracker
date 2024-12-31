@@ -11,6 +11,8 @@ import SuccessToast from '@/components/SuccessToast';
 import ModeSelector from '@/components/food/modes/ModeSelector';
 import ResultsSection from '@/components/food/ResultsSection';
 import { formatDateForStorage, formatDateForDisplay, formatTimeForDisplay } from '@/lib/utils';
+import { getMealType } from '@/lib/utils';
+
 
 const getMealType = (date) => {
   const hour = date.getHours();
@@ -37,19 +39,19 @@ const AddFood = () => {
   };
 
   const handleSave = (resultsToSave) => {
+    const now = new Date();
     const newEntry = {
-      date: formatDateForStorage(new Date()),
+      date: formatDateForStorage(now),
       food: resultsToSave.mainItem,
       ingredients: resultsToSave.ingredients.join(", "),
       sensitivities: resultsToSave.sensitivities || [],
       type: 'food',
-      mealType: getMealType(new Date())
+      mealType: getMealType(now)  // Using imported getMealType
     };
     
     try {
       addEntry(newEntry);
       setShowSaveSuccess(true);
-      // Only redirect after showing success message
       setTimeout(() => {
         router.push('/history');
       }, 500);
@@ -58,6 +60,7 @@ const AddFood = () => {
       setTimeout(() => setError(null), 3000);
     }
   };
+  
 
   const resetForm = () => {
     setPhoto(null);
