@@ -13,6 +13,10 @@ export async function POST(request) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
+          user_app_id: {
+            user_id: process.env.CLARIFAI_USER_ID,
+            app_id: process.env.CLARIFAI_APP_ID
+          },
           inputs: [
             {
               data: {
@@ -37,7 +41,7 @@ export async function POST(request) {
 
     const result = await response.json();
     const concepts = result.outputs[0].data.concepts
-      .filter(concept => concept.value > 0.9)  // Only keep high-confidence predictions
+      .filter(concept => concept.value > 0.9)
       .map(concept => ({
         name: concept.name,
         confidence: concept.value
