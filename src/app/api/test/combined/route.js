@@ -51,16 +51,23 @@ export async function POST(request) {
     }
 
     // Combine with Claude analysis
-    const prompt = `The image shows: ${predictions.join(', ')}. 
+    const prompt = `Automatic food detection has identified these items in the image: ${predictions.join(', ')}. 
     
-Analyze this food carefully and thoroughly. Return a JSON object with exactly this format:
+These predictions are from reliable food recognition software and should be considered accurate. Analyze this food and use these predictions to enhance your analysis.
+
+Return a JSON object with exactly this format:
 {
   "mainItem": "detailed name of the dish",
   "ingredients": ["ingredient1", "ingredient2", ...],
   "sensitivities": ["dairy", "gluten", "nuts", "soy", "eggs", "fish", "shellfish", "spicy", "citrus", "nightshades"]
 }
 
-Include sensitivities only if they are present in the dish. Use the provided Clarifai detections to enhance your analysis.`;
+Important:
+- Include ALL items detected by the automatic detection
+- Add any additional ingredients you can see
+- Include common ingredients used in these dishes even if not visible
+- Include sensitivities only if they are present in the dish
+- Be thorough in listing all potential ingredients`;
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
