@@ -56,48 +56,48 @@ const Profile = () => {
       const entries = [];
       
       // Generate 14 days of data
-      for (let i = 0; i < 14; i++) {
-        const currentDate = new Date(2024, 11, 15 + i); // Starting from Dec 15
-        const isWeek1 = i < 7;
-        
-        // Breakfast - 8 AM
-        entries.push(generateEntry(new Date(currentDate.setHours(8, 0)), 'food', {
-          food: isWeek1 ? 'Toast with Jam' : 'Fruit Bowl',
-          ingredients: isWeek1 ? 'bread, butter, jam' : 'banana, apple, berries, yogurt',
-          sensitivities: isWeek1 ? ['gluten'] : [],
-          mealType: 'Breakfast'
-        }));
+for (let i = 0; i < 14; i++) {
+  const currentDate = new Date(2024, 11, 15 + i); // Starting from Dec 15
+  const isWeek1 = i < 7;
+  
+  // Breakfast - 8 AM
+  entries.push(generateEntry(new Date(currentDate.setHours(8, 0)), 'food', {
+    food: isWeek1 ? 'Wheat Toast with Jam' : 'Oatmeal with Berries',
+    ingredients: isWeek1 ? 'wheat bread, butter, strawberry jam' : 'oats, blueberries, honey, almond milk',
+    sensitivities: isWeek1 ? ['gluten', 'dairy'] : [],
+    mealType: 'Breakfast'
+  }));
 
-        // Lunch - 12:30 PM
-        entries.push(generateEntry(new Date(currentDate.setHours(12, 30)), 'food', {
-          food: isWeek1 ? 'Sandwich' : 'Quinoa Salad',
-          ingredients: isWeek1 ? 'bread, turkey, lettuce, mayo' : 'quinoa, vegetables, olive oil',
-          sensitivities: isWeek1 ? ['gluten'] : [],
-          mealType: 'Lunch'
-        }));
+  // Lunch - 12:30 PM
+  entries.push(generateEntry(new Date(currentDate.setHours(12, 30)), 'food', {
+    food: isWeek1 ? 'Turkey Sandwich' : 'Quinoa Bowl',
+    ingredients: isWeek1 ? 'wheat bread, turkey, cheese, lettuce, mayo' : 'quinoa, chickpeas, avocado, olive oil, lemon',
+    sensitivities: isWeek1 ? ['gluten', 'dairy'] : ['legumes'],
+    mealType: 'Lunch'
+  }));
 
-        // Dinner - 6:30 PM
-        entries.push(generateEntry(new Date(currentDate.setHours(18, 30)), 'food', {
-          food: isWeek1 ? 'Pasta' : 'Grilled Chicken',
-          ingredients: isWeek1 ? 'wheat pasta, tomato sauce, cheese' : 'chicken, vegetables, rice',
-          sensitivities: isWeek1 ? ['gluten'] : [],
-          mealType: 'Dinner'
-        }));
+  // Dinner - 6:30 PM
+  entries.push(generateEntry(new Date(currentDate.setHours(18, 30)), 'food', {
+    food: isWeek1 ? 'Pasta Alfredo' : 'Grilled Salmon',
+    ingredients: isWeek1 ? 'wheat pasta, cream, parmesan, butter, garlic' : 'salmon, rice, broccoli, olive oil, garlic',
+    sensitivities: isWeek1 ? ['gluten', 'dairy'] : [],
+    mealType: 'Dinner'
+  }));
 
-        // Snack - 3:30 PM
-        entries.push(generateEntry(new Date(currentDate.setHours(15, 30)), 'food', {
-          food: isWeek1 ? 'Crackers' : 'Nuts',
-          ingredients: isWeek1 ? 'wheat flour, salt' : 'mixed nuts, dried fruit',
-          sensitivities: isWeek1 ? ['gluten'] : [],
-          mealType: 'Snack'
-        }));
+  // Snack - 3:30 PM
+  entries.push(generateEntry(new Date(currentDate.setHours(15, 30)), 'food', {
+    food: isWeek1 ? 'Crackers and Cheese' : 'Mixed Nuts',
+    ingredients: isWeek1 ? 'wheat crackers, cheddar cheese' : 'almonds, walnuts, cashews',
+    sensitivities: isWeek1 ? ['gluten', 'dairy'] : ['nuts'],
+    mealType: 'Snack'
+  }));
 
-        // Wellness Check - 9 PM
-        entries.push(generateEntry(new Date(currentDate.setHours(21, 0)), 'wellness', {
-          stomach: isWeek1 ? 'Poor' : 'Good',
-          energy: isWeek1 ? 'Low' : 'High'
-        }));
-      }
+  // Wellness Check - 9 PM
+  entries.push(generateEntry(new Date(currentDate.setHours(21, 0)), 'wellness', {
+    stomach: isWeek1 ? 'Poor' : 'Good',
+    energy: isWeek1 ? 'Low' : 'High'
+  }));
+}
 
       // Add all entries to Firestore
       const addPromises = entries.map(entry => addDoc(collection(db, 'entries'), entry));
