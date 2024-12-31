@@ -134,6 +134,9 @@ Please analyze this food and break it down into its component ingredients. Retur
 
 Important:
 - Break down detected dishes into their component ingredients
+- List only actual ingredients, not descriptions
+- For sauces and seasonings, break down into core ingredients (e.g. instead of "seasoning" list "garlic", "salt", "pepper")
+- Keep ingredients simple and direct (e.g. "sugar" not "sugar additive", "rice" not "steamed rice")
 - DO NOT list "hamburger" or "cheeseburger" as ingredients; instead list "beef patty", "cheese", "bun", etc.
 - DO NOT list "french fries" as an ingredient; instead list "potatoes", "oil"
 - Avoid repeating ingredients

@@ -99,7 +99,7 @@ export default function DaySection({ date, wellness, foods, onEditWellness, onEd
   const allEntries = [
     ...(wellness || []),
     ...foods
-  ].sort((a, b) => new Date(a.date) - new Date(b.date));
+  ].sort((a, b) => new Date(b.date) - new Date(a.date));
 
   return (
     <div className="mb-8">
