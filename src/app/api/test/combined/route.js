@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { ClarifaiStub, grpc } from 'clarifai-nodejs-grpc';
 
 const PAT = process.env.CLARIFAI_PAT;
 const USER_ID = 'clarifai';
@@ -7,43 +6,46 @@ const APP_ID = 'main';
 const MODEL_ID = 'food-item-recognition';
 const MODEL_VERSION_ID = '1d5fd481e0cf4826aa72ec3ff049e044';
 
-const stub = ClarifaiStub.grpc();
-const metadata = new grpc.Metadata();
-metadata.set('authorization', `Key ${PAT}`);
-
 async function getClarifaiPredictions(imageBase64) {
-  return new Promise((resolve, reject) => {
-    stub.PostModelOutputs(
+  const raw = JSON.stringify({
+    "user_app_id": {
+      "user_id": USER_ID,
+      "app_id": APP_ID
+    },
+    "inputs": [
       {
-        user_app_id: {
-          user_id: USER_ID,
-          app_id: APP_ID
-        },
-        model_id: MODEL_ID,
-        version_id: MODEL_VERSION_ID,
-        inputs: [{
-          data: {
-            image: {
-              base64: imageBase64
-            }
+        "data": {
+          "image": {
+            "base64": imageBase64
           }
-        }]
-      },
-      metadata,
-      (err, response) => {
-        if (err || response.status.code !== 10000) {
-          reject(err || new Error(response.status.description));
-          return;
         }
-        
-        const predictions = response.outputs[0].data.concepts
-          .filter(concept => concept.value > 0.85)
-          .map(concept => concept.name);
-          
-        resolve(predictions);
       }
-    );
+    ]
   });
+
+  const requestOptions = {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Authorization': 'Key ' + PAT
+    },
+    body: raw
+  };
+
+  const response = await fetch(
+    `https://api.clarifai.com/v2/models/${MODEL_ID}/versions/${MODEL_VERSION_ID}/outputs`,
+    requestOptions
+  );
+  
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(result.status.description);
+  }
+
+  return result.outputs[0].data.concepts
+    .filter(concept => concept.value > 0.85)
+    .map(concept => concept.name);
 }
 
 export async function POST(request) {
