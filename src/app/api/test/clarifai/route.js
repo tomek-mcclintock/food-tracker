@@ -5,7 +5,7 @@ export async function POST(request) {
     const { image } = await request.json();
 
     const response = await fetch(
-      'https://api.clarifai.com/v2/models/general-image-recognition/versions/aa7f35c01e0642fda5cf400f543e7c40/outputs',
+      'https://api.clarifai.com/v2/models/food-item-recognition/versions/1d5fd481e0cf4826aa72ec3ff049e044/outputs',
       {
         method: 'POST',
         headers: {

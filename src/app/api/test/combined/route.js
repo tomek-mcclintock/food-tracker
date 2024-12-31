@@ -1,50 +1,39 @@
 import { NextResponse } from 'next/server';
 
-const PAT = process.env.CLARIFAI_PAT;
-const USER_ID = 'clarifai';
-const APP_ID = 'main';
-const MODEL_ID = 'food-item-recognition';
-const MODEL_VERSION_ID = '1d5fd481e0cf4826aa72ec3ff049e044';
-
 async function getClarifaiPredictions(imageBase64) {
-  const raw = JSON.stringify({
-    "user_app_id": {
-      "user_id": USER_ID,
-      "app_id": APP_ID
-    },
-    "inputs": [
-      {
-        "data": {
-          "image": {
-            "base64": imageBase64
-          }
-        }
-      }
-    ]
-  });
-
-  const requestOptions = {
-    method: 'POST',
-    headers: {
-      'Accept': 'application/json',
-      'Authorization': 'Key ' + PAT
-    },
-    body: raw
-  };
-
   const response = await fetch(
-    `https://api.clarifai.com/v2/models/${MODEL_ID}/versions/${MODEL_VERSION_ID}/outputs`,
-    requestOptions
+    'https://api.clarifai.com/v2/models/food-item-recognition/versions/1d5fd481e0cf4826aa72ec3ff049e044/outputs',
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.CLARIFAI_PAT}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        user_app_id: {
+          user_id: process.env.CLARIFAI_USER_ID,
+          app_id: process.env.CLARIFAI_APP_ID
+        },
+        inputs: [
+          {
+            data: {
+              image: {
+                base64: imageBase64
+              }
+            }
+          }
+        ]
+      })
+    }
   );
-  
-  const result = await response.json();
 
   if (!response.ok) {
-    throw new Error(result.status.description);
+    throw new Error(`Clarifai API error: ${response.status} ${response.statusText}`);
   }
 
+  const result = await response.json();
   return result.outputs[0].data.concepts
-    .filter(concept => concept.value > 0.85)
+    .filter(concept => concept.value > 0.9)
     .map(concept => concept.name);
 }
 
@@ -53,12 +42,12 @@ export async function POST(request) {
     const { image } = await request.json();
 
     // Get Clarifai predictions first
-    let predictions;
+    let predictions = [];
     try {
       predictions = await getClarifaiPredictions(image);
+      console.log('Clarifai predictions:', predictions); // Debug log
     } catch (error) {
       console.error('Clarifai analysis failed:', error);
-      predictions = [];
     }
 
     // Combine with Claude analysis
@@ -111,6 +100,7 @@ Include sensitivities only if they are present in the dish. Use the provided Cla
       combinedAnalysis: JSON.parse(data.content[0].text)
     });
   } catch (error) {
+    console.error('Server error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
