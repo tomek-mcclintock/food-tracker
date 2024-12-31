@@ -5,7 +5,7 @@ export async function POST(request) {
     const { image } = await request.json();
 
     const response = await fetch(
-      'https://api.clarifai.com/v2/models/food-item-recognition/outputs',
+      'https://api.clarifai.com/v2/models/general-image-recognition/versions/aa7f35c01e0642fda5cf400f543e7c40/outputs',
       {
         method: 'POST',
         headers: {
@@ -27,18 +27,21 @@ export async function POST(request) {
     );
 
     if (!response.ok) {
-      console.error('Clarifai Error:', await response.text());
+      const errorText = await response.text();
+      console.error('Clarifai Error:', errorText);
       return NextResponse.json({ 
         error: `Clarifai API error: ${response.status} ${response.statusText}`,
-        token: process.env.CLARIFAI_PAT ? 'Token exists' : 'No token found'
+        details: errorText
       }, { status: response.status });
     }
 
     const result = await response.json();
-    const concepts = result.outputs[0].data.concepts.map(concept => ({
-      name: concept.name,
-      confidence: concept.value
-    }));
+    const concepts = result.outputs[0].data.concepts
+      .filter(concept => concept.value > 0.9)  // Only keep high-confidence predictions
+      .map(concept => ({
+        name: concept.name,
+        confidence: concept.value
+      }));
 
     return NextResponse.json({ concepts });
   } catch (error) {
