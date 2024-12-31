@@ -150,14 +150,6 @@ export default function EditEntry({ entry, onSave, onClose }) {
   </div>
 </div>
 
-// When initializing form data:
-const [formData, setFormData] = useState({
-  ...entry,
-  date: format(entryDate, 'yyyy-MM-dd'),
-  time: format(entryDate, 'HH:mm'),
-  mealType: entry.mealType || getMealType(entryDate)
-});
-
           <div>
             <label className="block text-sm font-medium mb-1">Food Name</label>
             <input
