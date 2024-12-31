@@ -1,11 +1,13 @@
 "use client"
 
-import React from 'react';  // Removed useState and useEffect since we don't need them anymore
+import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, RefreshCw, AlertCircle } from 'lucide-react';
 import { useFoodHistory } from '@/hooks/useFoodHistory';
 import { useInsights } from '@/hooks/useInsights';
+import WellnessTrends from '@/components/WellnessTrends';
 
 export default function Insights() {
   const { history } = useFoodHistory();
@@ -50,73 +52,86 @@ export default function Insights() {
         </Button>
       </div>
 
-      {loading ? (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
-            </div>
-          </CardContent>
-        </Card>
-      ) : error ? (
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="pt-6">
-            <div className="flex gap-2 text-red-600">
-              <AlertCircle className="h-5 w-5" />
-              <p>Error generating insights. Please try again later.</p>
-            </div>
-          </CardContent>
-        </Card>
-      ) : insights ? (
-        <div className="space-y-4">
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-lg font-medium text-blue-600 mb-4">
-                {insights.mainInsight}
-              </p>
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-medium text-gray-900 mb-1">Recent Pattern</h3>
-                  <p className="text-gray-600">{insights.recentPattern}</p>
+      <Tabs defaultValue="patterns">
+        <TabsList className="w-full mb-4">
+          <TabsTrigger value="patterns" className="flex-1">Patterns</TabsTrigger>
+          <TabsTrigger value="trends" className="flex-1">Trends</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="patterns">
+          {loading ? (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin text-blue-500" />
                 </div>
-                <div>
-                  <h3 className="font-medium text-gray-900 mb-1">Historical Pattern</h3>
-                  <p className="text-gray-600">{insights.historicalPattern}</p>
+              </CardContent>
+            </Card>
+          ) : error ? (
+            <Card className="border-red-200 bg-red-50">
+              <CardContent className="pt-6">
+                <div className="flex gap-2 text-red-600">
+                  <AlertCircle className="h-5 w-5" />
+                  <p>Error generating insights. Please try again later.</p>
                 </div>
-                <div>
-                  <h3 className="font-medium text-gray-900 mb-1">Suggestion</h3>
-                  <p className="text-gray-600">{insights.suggestion}</p>
-                </div>
-                {insights.ingredients && insights.ingredients.length > 0 && (
-                  <div>
-                    <h3 className="font-medium text-gray-900 mb-2">Ingredients to Watch</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {insights.ingredients.map((ingredient, index) => (
-                        <span
-                          key={index}
-                          className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm"
-                        >
-                          {ingredient}
-                        </span>
-                      ))}
+              </CardContent>
+            </Card>
+          ) : insights ? (
+            <div className="space-y-4">
+              <Card>
+                <CardContent className="pt-6">
+                  <p className="text-lg font-medium text-blue-600 mb-4">
+                    {insights.mainInsight}
+                  </p>
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="font-medium text-gray-900 mb-1">Recent Pattern</h3>
+                      <p className="text-gray-600">{insights.recentPattern}</p>
                     </div>
+                    <div>
+                      <h3 className="font-medium text-gray-900 mb-1">Historical Pattern</h3>
+                      <p className="text-gray-600">{insights.historicalPattern}</p>
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-gray-900 mb-1">Suggestion</h3>
+                      <p className="text-gray-600">{insights.suggestion}</p>
+                    </div>
+                    {insights.ingredients && insights.ingredients.length > 0 && (
+                      <div>
+                        <h3 className="font-medium text-gray-900 mb-2">Ingredients to Watch</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {insights.ingredients.map((ingredient, index) => (
+                            <span
+                              key={index}
+                              className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm"
+                            >
+                              {ingredient}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      ) : (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center py-8">
-              <p className="text-gray-500">
-                Click refresh to generate insights from your food diary.
-              </p>
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          ) : (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="text-center py-8">
+                  <p className="text-gray-500">
+                    Click refresh to generate insights from your food diary.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="trends">
+          <WellnessTrends history={history} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
