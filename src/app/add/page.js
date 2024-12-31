@@ -2,6 +2,7 @@
 "use client"
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useFoodHistory } from '@/hooks/useFoodHistory';
@@ -22,6 +23,7 @@ const AddFood = () => {
   const [photo, setPhoto] = useState(null);
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const [error, setError] = useState(null);
+  const router = useRouter();
   
   const { addEntry } = useFoodHistory();
   const { analyzing, results, analyzeFood, setResults } = useAnalysis();
@@ -41,15 +43,14 @@ const AddFood = () => {
       mealType: getMealType(now)
     };
     
-    const success = addEntry(newEntry);
-    
-    if (success) {
+    try {
+      addEntry(newEntry);
       setShowSaveSuccess(true);
       setTimeout(() => {
         setShowSaveSuccess(false);
-        resetForm();
-      }, 1500);
-    } else {
+        router.push('/history');
+      }, 500);
+    } catch (err) {
       setError('Failed to save entry. Please try again.');
       setTimeout(() => setError(null), 3000);
     }
@@ -63,6 +64,12 @@ const AddFood = () => {
   return (
     <div className="max-w-lg mx-auto pb-24 px-4">
       {showSaveSuccess && <SuccessToast message="Saved!" />}
+      
+      {error && (
+        <div className="fixed bottom-20 left-4 right-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl shadow-lg">
+          {error}
+        </div>
+      )}
 
       {!photo && !analyzing && !results && (
         <ModeSelector 
@@ -111,16 +118,9 @@ const AddFood = () => {
       {results && (
         <ResultsSection
           results={results}
-          onEdit={() => {}}
           onSave={handleSave}
           onStartOver={resetForm}
         />
-      )}
-
-      {error && (
-        <div className="fixed bottom-20 left-4 right-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl shadow-lg">
-          {error}
-        </div>
       )}
     </div>
   );
