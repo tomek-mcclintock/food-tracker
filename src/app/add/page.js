@@ -14,16 +14,6 @@ import { formatDateForStorage, formatDateForDisplay, formatTimeForDisplay } from
 import { getMealType } from '@/lib/utils';
 
 
-const getMealType = (date) => {
-  const hour = date.getHours();
-  const minutes = date.getMinutes();
-  const time = hour + minutes/60;
-
-  if (time < 10.5) return 'Breakfast';
-  if (time >= 11.75 && time <= 14) return 'Lunch';
-  if (time >= 18 && time <= 22) return 'Dinner';
-  return 'Snack';
-};
 
 const AddFood = () => {
   const [photo, setPhoto] = useState(null);
