@@ -13,6 +13,9 @@ export default function ResultsSection({ results, onSave, onStartOver }) {
   const [currentResults, setCurrentResults] = useState(results);
   const router = useRouter();
 
+  // Import getMealType
+  const { getMealType } = require('@/lib/utils');
+
   if (isEditing) {
     const entry = {
       type: 'food',
@@ -20,7 +23,7 @@ export default function ResultsSection({ results, onSave, onStartOver }) {
       food: currentResults.mainItem,
       ingredients: currentResults.ingredients.join(', '),
       sensitivities: currentResults.sensitivities || [],
-      mealType: getMealType(new Date())  // Get passed from parent
+      mealType: getMealType(new Date())
     };
 
     return (
