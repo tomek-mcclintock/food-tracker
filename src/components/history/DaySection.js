@@ -2,6 +2,7 @@
 
 import { format } from 'date-fns';
 import { Pencil, Trash2, CheckCircle2, Coffee, UtensilsCrossed } from 'lucide-react';
+import { formatDateForStorage, formatDateForDisplay, formatTimeForDisplay } from '@/lib/utils';
 
 // Component to show the appropriate icon for each meal type
 const MealIcon = ({ mealType }) => {
@@ -93,7 +94,7 @@ const Entry = ({ entry, onEdit, onDelete }) => {
 
 // Main component that displays all entries for a single day
 export default function DaySection({ date, wellness, foods, onEditWellness, onEditFood, onDeleteFood, onDeleteWellness }) {
-  const formattedDate = format(date, 'EEE d MMM yyyy');
+  const formattedDate = formatDateForDisplay(date);
   
   // Combine and sort all entries for the day chronologically
   const allEntries = [

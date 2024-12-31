@@ -7,26 +7,20 @@ import { Card, CardContent } from '@/components/ui/card';
 import EditEntry from '@/components/history/EditEntry';
 import { useRouter } from 'next/navigation';
 
+
 export default function ResultsSection({ results, onSave, onStartOver }) {
   const [isEditing, setIsEditing] = useState(false);
   const [currentResults, setCurrentResults] = useState(results);
   const router = useRouter();
 
   if (isEditing) {
-    // Create a food entry object in the same format as history entries
     const entry = {
       type: 'food',
       date: new Date().toISOString(),
       food: currentResults.mainItem,
       ingredients: currentResults.ingredients.join(', '),
       sensitivities: currentResults.sensitivities || [],
-      mealType: (() => {
-        const hour = new Date().getHours();
-        if (hour < 11) return 'Breakfast';
-        if (hour < 15) return 'Lunch';
-        if (hour < 20) return 'Dinner';
-        return 'Snack';
-      })()
+      mealType: getMealType(new Date())  // Get passed from parent
     };
 
     return (

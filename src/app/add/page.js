@@ -10,12 +10,16 @@ import { useAnalysis } from '@/hooks/useAnalysis';
 import SuccessToast from '@/components/SuccessToast';
 import ModeSelector from '@/components/food/modes/ModeSelector';
 import ResultsSection from '@/components/food/ResultsSection';
+import { formatDateForStorage, formatDateForDisplay, formatTimeForDisplay } from '@/lib/utils';
 
 const getMealType = (date) => {
   const hour = date.getHours();
-  if (hour < 11) return 'Breakfast';
-  if (hour < 15) return 'Lunch';
-  if (hour < 20) return 'Dinner';
+  const minutes = date.getMinutes();
+  const time = hour + minutes/60;
+
+  if (time < 10.5) return 'Breakfast';
+  if (time >= 11.75 && time <= 14) return 'Lunch';
+  if (time >= 18 && time <= 22) return 'Dinner';
   return 'Snack';
 };
 
@@ -33,14 +37,13 @@ const AddFood = () => {
   };
 
   const handleSave = (resultsToSave) => {
-    const now = new Date();
     const newEntry = {
-      date: now.toISOString(),
+      date: formatDateForStorage(new Date()),
       food: resultsToSave.mainItem,
       ingredients: resultsToSave.ingredients.join(", "),
       sensitivities: resultsToSave.sensitivities || [],
       type: 'food',
-      mealType: getMealType(now)
+      mealType: getMealType(new Date())
     };
     
     try {

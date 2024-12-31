@@ -4,16 +4,17 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { X } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
+import { formatDateForStorage, formatDateForDisplay, formatTimeForDisplay } from '@/lib/utils';
 
 export default function EditEntry({ entry, onSave, onClose }) {
   const entryDate = new Date(entry.date);
   
   const [formData, setFormData] = useState({
     ...entry,
-    date: format(entryDate, 'yyyy-MM-dd'), // Format date for date input
-    time: format(entryDate, 'HH:mm') // Time for time input
+    date: new Date(entry.date).toISOString().split('T')[0], // For date input
+    time: format(new Date(entry.date), 'HH:mm') // For time input
   });
-
+  
   const handleSave = () => {
     // Combine the date and time inputs into a single date object
     const [year, month, day] = formData.date.split('-');
