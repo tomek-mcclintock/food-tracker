@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { LogOut, Mail, User, RefreshCcw, Database } from 'lucide-react';
 import { db } from '@/lib/firebase';
 import { collection, query, where, getDocs, deleteDoc, addDoc } from 'firebase/firestore';
+import InstallButton from '@/components/InstallButton';
+
 
 const Profile = () => {
   const { user, logout } = useAuth();
@@ -152,6 +154,8 @@ for (let i = 0; i < 14; i++) {
             <Database className="w-4 h-4 mr-2" />
             Add Example Data
           </Button>
+
+          <InstallButton />
 
           <Button 
             variant="destructive"
