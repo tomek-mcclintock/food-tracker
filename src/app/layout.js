@@ -5,7 +5,6 @@ import BottomNav from "@/components/BottomNav";
 import { AuthContextProvider } from "@/context/AuthContext";
 import InstallPrompt from '@/components/InstallPrompt';
 
-
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
@@ -33,10 +32,10 @@ export default function RootLayout({ children }) {
       </head>
       <body className={inter.className}>
         <AuthContextProvider>
+          <InstallPrompt /> {/* Moved outside of main content area */}
           <main className="container mx-auto p-4">
             {children}
           </main>
-          <InstallPrompt />
           <BottomNav />
         </AuthContextProvider>
       </body>
