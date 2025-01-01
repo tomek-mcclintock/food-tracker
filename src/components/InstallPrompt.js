@@ -90,15 +90,16 @@ const InstallPrompt = () => {
       <div className="flex items-start gap-4">
         <div className="flex-1">
           <h3 className="font-medium mb-1">Install Food Tracker</h3>
-          {isIOS ? (
+            {isIOS ? (
             <p className="text-sm text-gray-600">
-              Tap the share button and select "Add to Home Screen" to install
+                1. Tap the <span className="inline-block px-1">⎙</span> share button in Safari's menu bar<br/>
+                2. Scroll down and tap "Add to Home Screen"
             </p>
-          ) : (
+            ) : (
             <p className="text-sm text-gray-600">
-              Install this app on your device for easy access anytime
+                Install this app on your device for easy access anytime
             </p>
-          )}
+            )}
         </div>
         <div className="flex gap-2">
           {!isIOS && (
