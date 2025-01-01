@@ -1,5 +1,6 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
+import './sw';
 import BottomNav from "@/components/BottomNav";
 import { AuthContextProvider } from "@/context/AuthContext";
 
