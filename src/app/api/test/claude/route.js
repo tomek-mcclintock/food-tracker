@@ -25,9 +25,7 @@ export async function POST(request) {
           content: [
             {
               type: "text",
-              text: `Automatic food detection has identified these items: ${predictions.join(', ')}. 
-    
-These predictions are from reliable food recognition software and should be considered accurate. Analyze this food and use these predictions to enhance your analysis.
+              text: `Analyze this food and:
 
 Return a JSON object with exactly this format:
 {
