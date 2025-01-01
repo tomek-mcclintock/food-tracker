@@ -11,7 +11,6 @@ const ModelTest = () => {
     clarifai: null,
     haiku: { withClarifai: null, withoutClarifai: null },
     sonnet: { withClarifai: null, withoutClarifai: null },
-    opus: { withClarifai: null, withoutClarifai: null }
   });
 
   const handleImageSelect = (e) => {
@@ -39,7 +38,7 @@ const ModelTest = () => {
       setResults(prev => ({ ...prev, clarifai: clarifaiResults }));
 
       // Test each Claude model with and without Clarifai
-      const models = ['haiku', 'sonnet', 'opus'];
+      const models = ['haiku', 'sonnet'];
       
       for (const model of models) {
         // Without Clarifai
@@ -149,10 +148,6 @@ const ModelTest = () => {
 
       {results.sonnet.withoutClarifai && (
         <ModelResults modelResults={results.sonnet} title="Claude 3 Sonnet Results" />
-      )}
-
-      {results.opus.withoutClarifai && (
-        <ModelResults modelResults={results.opus} title="Claude 3 Opus Results" />
       )}
     </div>
   );

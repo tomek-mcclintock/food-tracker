@@ -8,7 +8,6 @@ export async function POST(request) {
     const modelIds = {
       'haiku': 'claude-3-haiku-20240307',
       'sonnet': 'claude-3-sonnet-20240229',
-      'opus': 'claude-3-opus-20240229'
     };
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
