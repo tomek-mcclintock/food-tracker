@@ -14,6 +14,11 @@ const BottomNav = () => {
   const [showWellnessCheck, setShowWellnessCheck] = useState(false);
   const { addEntry } = useFoodHistory();
 
+  // Add this check to hide navbar on login and signup pages
+  if (pathname === '/login' || pathname === '/signup') {
+    return null;
+  }
+
   return (
     <>
       <AddOptionsMenu 
@@ -65,14 +70,14 @@ const BottomNav = () => {
             <span className="text-xs mt-0.5">Profile</span>
           </Link>
         </div>
-      </div>
+        </div>
 
       {showWellnessCheck && (
         <WellnessCheck
           onClose={() => setShowWellnessCheck(false)}
           onSubmit={(entry) => {
             addEntry(entry);
-            setShowWellnessCheck(false);
+            setShowWellnessCheck(false);;
           }}
         />
       )}
