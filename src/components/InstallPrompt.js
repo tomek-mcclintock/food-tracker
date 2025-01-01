@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React, { useEffect, useState } from 'react';
 import { Download } from 'lucide-react';
@@ -9,17 +9,30 @@ const InstallPrompt = () => {
   const [isIOS, setIsIOS] = useState(false);
 
   useEffect(() => {
+    // Debug logs
+    console.log('PWA Debug: Starting InstallPrompt check');
+    console.log('PWA Debug: Is standalone?', window.matchMedia('(display-mode: standalone)').matches);
+    
+    // Check if already installed
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      console.log('PWA Debug: App is already installed');
+      return;
+    }
+
     // Check if it's iOS
     const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent);
     setIsIOS(isIOSDevice);
+    console.log('PWA Debug: Is iOS device?', isIOSDevice);
 
     // Store the install prompt event
     const handleBeforeInstallPrompt = (e) => {
       e.preventDefault();
+      console.log('PWA Debug: Install prompt event captured');
       setInstallPrompt(e);
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    console.log('PWA Debug: Event listener added');
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
