@@ -36,7 +36,7 @@ const ModelTest = () => {
     
     try {
       // Test each model
-      const models = ['sonnet', 'gpt4v'];
+      const models = ['sonnet', 'gpt4o'];
       
       for (const model of models) {
         // Without Clarifai only

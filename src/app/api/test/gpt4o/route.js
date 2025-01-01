@@ -90,7 +90,7 @@ Important:
     }
 
     return NextResponse.json({
-      model: 'gpt4',
+      model: 'gpt4o',
       analysis: JSON.parse(data.choices[0].message.content)
     });
   } catch (error) {
