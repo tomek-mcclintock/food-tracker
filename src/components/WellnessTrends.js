@@ -34,7 +34,6 @@ const WellnessTrends = ({ history }) => {
   const filteredAndProcessedData = useMemo(() => {
     if (!history) return [];
 
-    // Calculate start date based on selected time range
     const now = new Date();
     let startDate = new Date();
     switch (timeRange) {
@@ -51,33 +50,30 @@ const WellnessTrends = ({ history }) => {
         startDate = new Date(0);
     }
 
-    const wellnessEntries = history
+    return history
       .filter(entry => 
         entry.type === 'wellness' && 
         new Date(entry.date) > startDate
       )
       .map(entry => ({
+        timestamp: new Date(entry.date).getTime(),
         date: new Date(entry.date).toLocaleDateString('en-US', { 
-          month: 'short', 
           day: 'numeric',
-          hour: '2-digit'
+          month: 'short'
         }),
         stomach: wellnessToNumber[entry.stomach],
         energy: wellnessToNumber[entry.energy],
         tooltipDate: new Date(entry.date).toLocaleDateString('en-US', { 
-          month: 'short', 
-          day: 'numeric', 
-          year: 'numeric',
+          day: 'numeric',
+          month: 'short',
           hour: '2-digit',
           minute: '2-digit'
         })
       }))
-      .sort((a, b) => new Date(a.date) - new Date(b.date));
-
-    return wellnessEntries;
+      .sort((a, b) => a.timestamp - b.timestamp);
   }, [history, timeRange]);
 
-  const CustomTooltip = ({ active, payload, label }) => {
+  const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       const getLabel = (value) => {
         const ratings = [
@@ -91,12 +87,12 @@ const WellnessTrends = ({ history }) => {
       };
 
       return (
-        <div className="bg-white p-4 rounded-lg shadow-lg border">
-          <p className="font-medium mb-2">{payload[0]?.payload.tooltipDate}</p>
-          <p className="text-blue-500">
+        <div className="bg-white p-3 rounded-lg shadow-lg border">
+          <p className="text-xs font-medium mb-1">{payload[0]?.payload.tooltipDate}</p>
+          <p className="text-xs text-blue-500">
             Stomach: {getLabel(payload[0]?.value)}
           </p>
-          <p className="text-green-500">
+          <p className="text-xs text-green-500">
             Energy: {getLabel(payload[1]?.value)}
           </p>
         </div>
@@ -108,6 +104,15 @@ const WellnessTrends = ({ history }) => {
   const getYAxisLabel = (value) => {
     const labels = ['Very Poor', 'Poor', 'Okay', 'Good', 'Excellent'];
     return labels[value - 1] || '';
+  };
+
+  // Format tick based on position
+  const formatXAxisTick = (timestamp, index, array) => {
+    if (index === 0 || index === array.length - 1 || index === Math.floor(array.length / 2)) {
+      const date = new Date(timestamp);
+      return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+    }
+    return '';
   };
 
   return (
@@ -140,45 +145,54 @@ const WellnessTrends = ({ history }) => {
           </TimeRangeButton>
         </div>
 
-        <div className="h-80">
+        <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart
               data={filteredAndProcessedData}
-              margin={{ top: 10, right: 10, left: 10, bottom: 5 }}
+              margin={{ top: 5, right: 5, left: 0, bottom: 20 }}
             >
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis 
-                dataKey="date"
-                tick={{ fontSize: 12 }}
-                interval="preserveEnd"
-                tickMargin={10}
+                dataKey="timestamp"
+                type="number"
+                domain={['dataMin', 'dataMax']}
+                tickFormatter={(val, index) => formatXAxisTick(val, index, filteredAndProcessedData)}
+                tick={{ fontSize: 11 }}
+                interval={0}
               />
               <YAxis
                 domain={[1, 5]}
                 ticks={[1, 2, 3, 4, 5]}
                 tickFormatter={getYAxisLabel}
-                tick={{ fontSize: 12 }}
-                width={80}
+                tick={{ fontSize: 11 }}
+                width={70}
               />
               <Tooltip content={<CustomTooltip />} />
-              <Legend verticalAlign="top" height={36} />
+              <Legend 
+                verticalAlign="bottom" 
+                height={30}
+                wrapperStyle={{
+                  fontSize: '11px',
+                  marginTop: '10px'
+                }}
+              />
               <Line
                 type="monotone"
                 dataKey="stomach"
                 stroke="#3B82F6"
                 strokeWidth={2}
-                dot={{ r: 4 }}
+                dot={{ r: 3 }}
                 name="Stomach Comfort"
-                activeDot={{ r: 6 }}
+                activeDot={{ r: 5 }}
               />
               <Line
                 type="monotone"
                 dataKey="energy"
                 stroke="#22C55E"
                 strokeWidth={2}
-                dot={{ r: 4 }}
+                dot={{ r: 3 }}
                 name="Energy Level"
-                activeDot={{ r: 6 }}
+                activeDot={{ r: 5 }}
               />
             </LineChart>
           </ResponsiveContainer>
