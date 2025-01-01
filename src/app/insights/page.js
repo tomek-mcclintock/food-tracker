@@ -1,7 +1,7 @@
 "use client"
 
 import React from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2, RefreshCw, AlertCircle } from 'lucide-react';
@@ -9,6 +9,7 @@ import { useFoodHistory } from '@/hooks/useFoodHistory';
 import { useInsights } from '@/hooks/useInsights';
 import WellnessTrends from '@/components/WellnessTrends';
 import SensitivityCorrelation from '@/components/SensitivityCorrelation';
+import HealthHeatCalendar from '@/components/HealthHeatCalendar';
 
 export default function Insights() {
   const { history } = useFoodHistory();
@@ -131,6 +132,11 @@ export default function Insights() {
         </TabsContent>
 
         <TabsContent value="data" className="space-y-6">
+          <div>
+            <h2 className="font-medium text-gray-900 mb-3">Overview</h2>
+            <HealthHeatCalendar history={history} />
+          </div>
+
           <div>
             <h2 className="font-medium text-gray-900 mb-3">Wellness Trends</h2>
             <WellnessTrends history={history} />
