@@ -2,7 +2,14 @@ import { NextResponse } from 'next/server';
 
 export async function POST(request) {
   try {
-    const { image } = await request.json();
+    const { image, model = 'haiku' } = await request.json();
+
+    // Map model names to their identifiers
+    const modelIds = {
+      'haiku': 'claude-3-haiku-20240307',
+      'sonnet': 'claude-3-sonnet-20240229',
+      'opus': 'claude-3-opus-20240229'
+    };
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -12,7 +19,7 @@ export async function POST(request) {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: "claude-3-haiku-20240307",
+        model: modelIds[model],
         max_tokens: 1024,
         messages: [{
           role: "user",
@@ -40,7 +47,10 @@ export async function POST(request) {
       return NextResponse.json({ error: data.error }, { status: response.status });
     }
 
-    return NextResponse.json(JSON.parse(data.content[0].text));
+    return NextResponse.json({
+      model: model,
+      analysis: JSON.parse(data.content[0].text)
+    });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
