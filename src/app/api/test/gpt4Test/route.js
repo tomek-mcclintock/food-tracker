@@ -41,10 +41,17 @@ export async function POST(request) {
   try {
     const { image } = await request.json();
 
+    // Check if API key exists
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('OpenAI API key is not configured');
+      return NextResponse.json({ error: 'OpenAI API key is not configured' }, { status: 500 });
+    }
+
     // Get Clarifai predictions first
     let predictions = [];
     try {
       predictions = await getClarifaiPredictions(image);
+      console.log('Clarifai predictions:', predictions);
     } catch (error) {
       console.error('Clarifai analysis failed:', error);
     }
@@ -56,7 +63,7 @@ export async function POST(request) {
         'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: "gpt-4o",
+        model: "gpt-4-vision-preview",
         messages: [
           {
             role: "user",
@@ -93,7 +100,23 @@ Return a JSON object with exactly this format:
     "salicylates", // many fruits, vegetables, spices, mint
     "spicy"        // chili peppers, hot spices
   ]
-}`
+}
+
+Important:
+- Include ALL items detected by the automatic detection
+- Add any additional ingredients you can see
+- Include common ingredients used in these dishes even if not visible
+- Include sensitivities for both main dishes and side items
+- Be thorough in checking for ALL sensitivity categories that apply
+- Common relationships to remember:
+  * French fries → nightshades (potatoes)
+  * Chocolate desserts → caffeine
+  * Pickled/fermented items → histamine
+  * Sauces often contain alliums (garlic/onion)
+  * Many seasonings contain salicylates
+  * Pre-made sauces often contain sulfites
+  * Breads/buns contain gluten and often corn
+  * Most condiments contain FODMAP ingredients`
               },
               {
                 type: "image_url",
@@ -111,6 +134,7 @@ Return a JSON object with exactly this format:
     const data = await response.json();
     
     if (!response.ok) {
+      console.error('OpenAI API error:', data);
       return NextResponse.json({ error: data.error }, { status: response.status });
     }
 
@@ -120,6 +144,7 @@ Return a JSON object with exactly this format:
       analysis: JSON.parse(data.choices[0].message.content)
     });
   } catch (error) {
+    console.error('Server error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
