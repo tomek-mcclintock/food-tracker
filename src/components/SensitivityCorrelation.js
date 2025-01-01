@@ -2,15 +2,6 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from 'recharts';
 
 export default function SensitivityCorrelation({ history = [] }) {
   const calculateSensitivityCorrelations = (data) => {
@@ -71,38 +62,21 @@ export default function SensitivityCorrelation({ history = [] }) {
       .map(([sensitivity, counts]) => ({
         name: sensitivity,
         percentage: Math.round((counts.lowScores / counts.total) * 100),
-        total: counts.total
+        total: counts.total,
+        lowScores: counts.lowScores
       }))
-      .filter(item => item.total > 0)
+      .filter(item => item.lowScores > 0)  // Only include items that have caused low scores
       .sort((a, b) => b.percentage - a.percentage);
   };
 
   const data = calculateSensitivityCorrelations(history);
-
-  const CustomTooltip = ({ active, payload }) => {
-    if (active && payload && payload.length) {
-      const { name, percentage, total } = payload[0].payload;
-      return (
-        <div className="bg-white p-3 rounded-lg shadow-lg border">
-          <p className="font-medium capitalize">{name}</p>
-          <p className="text-sm text-gray-600">
-            {percentage}% correlation with low stomach comfort
-          </p>
-          <p className="text-sm text-gray-600">
-            Based on {total} {total === 1 ? 'occurrence' : 'occurrences'}
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
 
   if (data.length === 0) {
     return (
       <Card>
         <CardContent className="pt-6">
           <div className="text-center py-8 text-gray-500">
-            No sensitivity data available yet
+            No correlations found between sensitivities and low stomach comfort
           </div>
         </CardContent>
       </Card>
@@ -115,38 +89,29 @@ export default function SensitivityCorrelation({ history = [] }) {
         <p className="text-sm text-gray-600 mb-6">
           Percentage of times a food type was followed by low stomach comfort within 48 hours
         </p>
-        <div className="h-[300px] w-full">
-          <ResponsiveContainer>
-            <BarChart
-              data={data}
-              layout="vertical"
-              margin={{
-                top: 5,
-                right: 30,
-                left: 80,
-                bottom: 5,
-              }}
-            >
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-              <XAxis 
-                type="number" 
-                domain={[0, 100]}
-                tickFormatter={(value) => `${value}%`}
-              />
-              <YAxis 
-                type="category"
-                dataKey="name"
-                tickFormatter={(value) => value.charAt(0).toUpperCase() + value.slice(1)}
-                width={75}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Bar 
-                dataKey="percentage" 
-                fill="#3B82F6"
-                radius={[0, 4, 4, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+        <div className="space-y-6">
+          {data.map(item => (
+            <div key={item.name} className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="font-medium capitalize">{item.name}</span>
+                <span className="text-sm text-gray-600">
+                  {item.lowScores} of {item.total} times
+                </span>
+              </div>
+              <div className="relative h-8 bg-gray-100 rounded-lg overflow-hidden">
+                <div 
+                  className="absolute inset-y-0 left-0 bg-blue-500 transition-all duration-500 rounded-lg"
+                  style={{ width: `${item.percentage}%` }}
+                >
+                  <div className="h-full flex items-center justify-end px-3">
+                    <span className="text-white text-sm font-medium">
+                      {item.percentage}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </CardContent>
     </Card>
