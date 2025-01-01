@@ -11,6 +11,7 @@ const ModelTest = () => {
     clarifai: null,
     haiku: { withClarifai: null, withoutClarifai: null },
     sonnet: { withClarifai: null, withoutClarifai: null },
+    gpt4: { withClarifai: null, withoutClarifai: null }
   });
 
   const handleImageSelect = (e) => {
@@ -21,6 +22,13 @@ const ModelTest = () => {
       reader.readAsDataURL(file);
     }
   };
+
+  const getEndpoint = (model, withClarifai) => {
+    if (model === 'gpt4') {
+      return withClarifai ? '/api/test/gpt4Test' : '/api/test/gpt4';
+    }
+    return withClarifai ? '/api/test/combinedTest' : '/api/test/claude';
+  };  
 
   const runTest = async () => {
     if (!image) return;
@@ -38,28 +46,27 @@ const ModelTest = () => {
       setResults(prev => ({ ...prev, clarifai: clarifaiResults }));
 
       // Test each Claude model with and without Clarifai
-      const models = ['haiku', 'sonnet'];
+      const models = ['haiku', 'sonnet', 'gpt4'];
       
       for (const model of models) {
-        // Without Clarifai
-        const withoutClarifaiResponse = await fetch('/api/test/claude', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
+// Without Clarifai
+        const withoutClarifaiResponse = await fetch(getEndpoint(model, false), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
             image: base64Data,
             model: model 
-          })
+            })
         });
-        const withoutClarifaiResults = await withoutClarifaiResponse.json();
         
         // With Clarifai
-        const withClarifaiResponse = await fetch('/api/test/combinedTest', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
+        const withClarifaiResponse = await fetch(getEndpoint(model, true), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
             image: base64Data,
             model: model 
-          })
+            })
         });
         const withClarifaiResults = await withClarifaiResponse.json();
 
@@ -149,6 +156,11 @@ const ModelTest = () => {
       {results.sonnet.withoutClarifai && (
         <ModelResults modelResults={results.sonnet} title="Claude 3 Sonnet Results" />
       )}
+
+        {results.gpt4.withoutClarifai && (
+        <ModelResults modelResults={results.gpt4} title="GPT-4 Vision Results" />
+        )}
+
     </div>
   );
 };
