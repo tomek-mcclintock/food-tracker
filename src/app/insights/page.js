@@ -8,6 +8,7 @@ import { Loader2, RefreshCw, AlertCircle } from 'lucide-react';
 import { useFoodHistory } from '@/hooks/useFoodHistory';
 import { useInsights } from '@/hooks/useInsights';
 import WellnessTrends from '@/components/WellnessTrends';
+import SensitivityCorrelation from '@/components/SensitivityCorrelation';
 
 export default function Insights() {
   const { history } = useFoodHistory();
@@ -52,13 +53,13 @@ export default function Insights() {
         </Button>
       </div>
 
-      <Tabs defaultValue="patterns">
+      <Tabs defaultValue="ai-review">
         <TabsList className="w-full mb-4">
-          <TabsTrigger value="patterns" className="flex-1">Patterns</TabsTrigger>
-          <TabsTrigger value="trends" className="flex-1">Trends</TabsTrigger>
+          <TabsTrigger value="ai-review" className="flex-1">AI Review</TabsTrigger>
+          <TabsTrigger value="data" className="flex-1">Data</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="patterns">
+        <TabsContent value="ai-review">
           {loading ? (
             <Card>
               <CardContent className="pt-6">
@@ -128,8 +129,16 @@ export default function Insights() {
           )}
         </TabsContent>
 
-        <TabsContent value="trends">
-          <WellnessTrends history={history} />
+        <TabsContent value="data" className="space-y-6">
+          <div>
+            <h2 className="font-medium text-gray-900 mb-3">Wellness Trends</h2>
+            <WellnessTrends history={history} />
+          </div>
+          
+          <div>
+            <h2 className="font-medium text-gray-900 mb-3">Sensitivity Correlations</h2>
+            <SensitivityCorrelation history={history} />
+          </div>
         </TabsContent>
       </Tabs>
     </div>
