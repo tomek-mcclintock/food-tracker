@@ -54,53 +54,59 @@ const Profile = () => {
         type,
         ...data
       });
-
+  
       const entries = [];
       
-      // Generate 14 days of data
-for (let i = 0; i < 14; i++) {
-  const currentDate = new Date(2024, 11, 15 + i); // Starting from Dec 15
-  const isWeek1 = i < 7;
+      // Generate 14 days of data, working backwards from today
+      for (let i = 13; i >= 0; i--) {
+        const currentDate = new Date();
+        currentDate.setDate(currentDate.getDate() - i); // This counts back from today
+        const isFirstWeek = i >= 7; // First week has more sensitivities
+        
+        // Breakfast - 8 AM
+        currentDate.setHours(8, 0, 0, 0);
+        entries.push(generateEntry(new Date(currentDate), 'food', {
+          food: isFirstWeek ? 'Wheat Toast with Jam' : 'Oatmeal with Berries',
+          ingredients: isFirstWeek ? 'wheat bread, butter, strawberry jam' : 'oats, blueberries, honey, almond milk',
+          sensitivities: isFirstWeek ? ['gluten', 'dairy'] : [],
+          mealType: 'Breakfast'
+        }));
   
-  // Breakfast - 8 AM
-  entries.push(generateEntry(new Date(currentDate.setHours(8, 0)), 'food', {
-    food: isWeek1 ? 'Wheat Toast with Jam' : 'Oatmeal with Berries',
-    ingredients: isWeek1 ? 'wheat bread, butter, strawberry jam' : 'oats, blueberries, honey, almond milk',
-    sensitivities: isWeek1 ? ['gluten', 'dairy'] : [],
-    mealType: 'Breakfast'
-  }));
-
-  // Lunch - 12:30 PM
-  entries.push(generateEntry(new Date(currentDate.setHours(12, 30)), 'food', {
-    food: isWeek1 ? 'Turkey Sandwich' : 'Quinoa Bowl',
-    ingredients: isWeek1 ? 'wheat bread, turkey, cheese, lettuce, mayo' : 'quinoa, chickpeas, avocado, olive oil, lemon',
-    sensitivities: isWeek1 ? ['gluten', 'dairy'] : ['legumes'],
-    mealType: 'Lunch'
-  }));
-
-  // Dinner - 6:30 PM
-  entries.push(generateEntry(new Date(currentDate.setHours(18, 30)), 'food', {
-    food: isWeek1 ? 'Pasta Alfredo' : 'Grilled Salmon',
-    ingredients: isWeek1 ? 'wheat pasta, cream, parmesan, butter, garlic' : 'salmon, rice, broccoli, olive oil, garlic',
-    sensitivities: isWeek1 ? ['gluten', 'dairy'] : [],
-    mealType: 'Dinner'
-  }));
-
-  // Snack - 3:30 PM
-  entries.push(generateEntry(new Date(currentDate.setHours(15, 30)), 'food', {
-    food: isWeek1 ? 'Crackers and Cheese' : 'Mixed Nuts',
-    ingredients: isWeek1 ? 'wheat crackers, cheddar cheese' : 'almonds, walnuts, cashews',
-    sensitivities: isWeek1 ? ['gluten', 'dairy'] : ['nuts'],
-    mealType: 'Snack'
-  }));
-
-  // Wellness Check - 9 PM
-  entries.push(generateEntry(new Date(currentDate.setHours(21, 0)), 'wellness', {
-    stomach: isWeek1 ? 'Poor' : 'Good',
-    energy: isWeek1 ? 'Low' : 'High'
-  }));
-}
-
+        // Lunch - 12:30 PM
+        currentDate.setHours(12, 30, 0, 0);
+        entries.push(generateEntry(new Date(currentDate), 'food', {
+          food: isFirstWeek ? 'Turkey Sandwich' : 'Quinoa Bowl',
+          ingredients: isFirstWeek ? 'wheat bread, turkey, cheese, lettuce, mayo' : 'quinoa, chickpeas, avocado, olive oil, lemon',
+          sensitivities: isFirstWeek ? ['gluten', 'dairy'] : ['legumes'],
+          mealType: 'Lunch'
+        }));
+  
+        // Dinner - 6:30 PM
+        currentDate.setHours(18, 30, 0, 0);
+        entries.push(generateEntry(new Date(currentDate), 'food', {
+          food: isFirstWeek ? 'Pasta Alfredo' : 'Grilled Salmon',
+          ingredients: isFirstWeek ? 'wheat pasta, cream, parmesan, butter, garlic' : 'salmon, rice, broccoli, olive oil, garlic',
+          sensitivities: isFirstWeek ? ['gluten', 'dairy'] : [],
+          mealType: 'Dinner'
+        }));
+  
+        // Snack - 3:30 PM
+        currentDate.setHours(15, 30, 0, 0);
+        entries.push(generateEntry(new Date(currentDate), 'food', {
+          food: isFirstWeek ? 'Crackers and Cheese' : 'Mixed Nuts',
+          ingredients: isFirstWeek ? 'wheat crackers, cheddar cheese' : 'almonds, walnuts, cashews',
+          sensitivities: isFirstWeek ? ['gluten', 'dairy'] : ['nuts'],
+          mealType: 'Snack'
+        }));
+  
+        // Wellness Check - 9 PM
+        currentDate.setHours(21, 0, 0, 0);
+        entries.push(generateEntry(new Date(currentDate), 'wellness', {
+          stomach: isFirstWeek ? 'Poor' : 'Good',
+          energy: isFirstWeek ? 'Low' : 'High'
+        }));
+      }
+  
       // Add all entries to Firestore
       const addPromises = entries.map(entry => addDoc(collection(db, 'entries'), entry));
       await Promise.all(addPromises);
