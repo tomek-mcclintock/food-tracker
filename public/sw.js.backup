@@ -1,0 +1,66 @@
+const CACHE_NAME = 'food-tracker-v1';
+
+const urlsToCache = [
+  '/',
+  '/history',
+  '/insights',
+  '/profile',
+  '/manifest.json'
+];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => {
+        return cache.addAll(urlsToCache);
+      })
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  // Don't handle non-GET requests
+  if (event.request.method !== 'GET') {
+    return;
+  }
+
+  event.respondWith(
+    fetch(event.request, {
+      redirect: 'follow',
+      credentials: 'same-origin'
+    })
+    .then(response => {
+      // If the response was good, clone it and store it in the cache
+      if (response.status === 200) {
+        const responseToCache = response.clone();
+        caches.open(CACHE_NAME)
+          .then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+      }
+      return response;
+    })
+    .catch(async () => {
+      // If the network request failed, try to get it from the cache
+      const cachedResponse = await caches.match(event.request);
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      // If the cache failed too, return a basic offline response
+      return new Response('Offline', { status: 503, statusText: 'Service Unavailable' });
+    })
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
+});

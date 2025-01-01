@@ -1,5 +1,7 @@
 "use client";
 
+// Temporarily disabled service worker
+/* 
 if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
   window.addEventListener('load', function() {
     navigator.serviceWorker
@@ -12,3 +14,4 @@ if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       });
   });
 }
+*/
