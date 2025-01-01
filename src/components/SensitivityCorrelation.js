@@ -12,34 +12,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-// Demo data
-const demoHistory = [
-  // Dairy entries with mixed outcomes
-  { type: 'food', date: '2024-01-01T08:00', sensitivities: ['dairy'] },
-  { type: 'wellness', date: '2024-01-02T10:00', stomach: 'Poor' },
-  { type: 'food', date: '2024-01-05T08:00', sensitivities: ['dairy'] },
-  { type: 'wellness', date: '2024-01-06T10:00', stomach: 'Good' },
-  { type: 'food', date: '2024-01-10T08:00', sensitivities: ['dairy'] },
-  { type: 'wellness', date: '2024-01-11T10:00', stomach: 'Poor' },
-
-  // Gluten entries with high correlation
-  { type: 'food', date: '2024-01-03T12:00', sensitivities: ['gluten'] },
-  { type: 'wellness', date: '2024-01-04T14:00', stomach: 'Poor' },
-  { type: 'food', date: '2024-01-08T12:00', sensitivities: ['gluten'] },
-  { type: 'wellness', date: '2024-01-09T14:00', stomach: 'Poor' },
-  { type: 'food', date: '2024-01-15T12:00', sensitivities: ['gluten'] },
-  { type: 'wellness', date: '2024-01-16T14:00', stomach: 'Poor' },
-
-  // Soy entries with low correlation
-  { type: 'food', date: '2024-01-07T13:00', sensitivities: ['soy'] },
-  { type: 'wellness', date: '2024-01-08T15:00', stomach: 'Good' },
-  { type: 'food', date: '2024-01-12T13:00', sensitivities: ['soy'] },
-  { type: 'wellness', date: '2024-01-13T15:00', stomach: 'Good' },
-  { type: 'food', date: '2024-01-18T13:00', sensitivities: ['soy'] },
-  { type: 'wellness', date: '2024-01-19T15:00', stomach: 'Poor' }
-];
-
-export default function SensitivityCorrelation({ history = demoHistory }) {
+export default function SensitivityCorrelation({ history = [] }) {
   const calculateSensitivityCorrelations = (data) => {
     if (!Array.isArray(data) || data.length === 0) {
       return [];
@@ -139,37 +112,41 @@ export default function SensitivityCorrelation({ history = demoHistory }) {
   return (
     <Card>
       <CardContent className="pt-6">
+        <p className="text-sm text-gray-600 mb-6">
+          Percentage of times a food type was followed by low stomach comfort within 48 hours
+        </p>
         <div className="h-[300px] w-full">
           <ResponsiveContainer>
             <BarChart
               data={data}
+              layout="vertical"
               margin={{
-                top: 20,
+                top: 5,
                 right: 30,
-                left: 20,
+                left: 80,
                 bottom: 5,
               }}
             >
-              <CartesianGrid strokeDasharray="3 3" />
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} />
               <XAxis 
-                dataKey="name"
-                tickFormatter={(value) => value.charAt(0).toUpperCase() + value.slice(1)}
+                type="number" 
+                domain={[0, 100]}
+                tickFormatter={(value) => `${value}%`}
               />
               <YAxis 
-                tickFormatter={(value) => `${value}%`}
-                domain={[0, 100]}
+                type="category"
+                dataKey="name"
+                tickFormatter={(value) => value.charAt(0).toUpperCase() + value.slice(1)}
+                width={75}
               />
               <Tooltip content={<CustomTooltip />} />
               <Bar 
                 dataKey="percentage" 
                 fill="#3B82F6"
-                radius={[4, 4, 0, 0]}
+                radius={[0, 4, 4, 0]}
               />
             </BarChart>
           </ResponsiveContainer>
-        </div>
-        <div className="mt-4 text-sm text-gray-600 text-center">
-          Percentage of times each sensitivity was followed by low stomach comfort within 48 hours
         </div>
       </CardContent>
     </Card>
