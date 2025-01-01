@@ -30,6 +30,11 @@ const InstallButton = () => {
   }, []);
 
   const handleInstallClick = async () => {
+    if (isIOS) {
+      alert('To install:\n\n1. Tap the ⎙ share button in Safari\'s menu bar\n2. Scroll down and tap "Add to Home Screen"');
+      return;
+    }
+    
     if (!installPrompt) return;
     await installPrompt.prompt();
     setInstallPrompt(null);
