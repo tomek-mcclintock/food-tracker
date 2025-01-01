@@ -17,7 +17,7 @@ export async function POST(request) {
         'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: "gpt-4o",
+        model: "gpt-4-vision",
         messages: [
           {
             role: "system",
@@ -94,7 +94,7 @@ max_tokens: 1000
     }
 
     return NextResponse.json({
-      model: 'gpt4o',
+      model: 'gpt4v',
       analysis: JSON.parse(data.choices[0].message.content)
     });
   } catch (error) {
