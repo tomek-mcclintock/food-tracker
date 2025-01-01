@@ -40,18 +40,7 @@ export default function Insights() {
 
   return (
     <div className="max-w-2xl mx-auto pb-24 px-4">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Your Insights</h1>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleRefresh}
-          disabled={loading}
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
-      </div>
+      <h1 className="text-2xl font-bold mb-4">Your Insights</h1>
 
       <Tabs defaultValue="ai-review">
         <TabsList className="w-full mb-4">
@@ -60,6 +49,18 @@ export default function Insights() {
         </TabsList>
 
         <TabsContent value="ai-review">
+          <div className="flex justify-end mb-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={loading}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+          </div>
+          
           {loading ? (
             <Card>
               <CardContent className="pt-6">
