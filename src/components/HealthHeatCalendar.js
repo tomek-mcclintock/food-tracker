@@ -1,21 +1,18 @@
 'use client'
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 
 const HealthHeatCalendar = ({ history = [] }) => {
-  // Get the date range
   const today = new Date();
-  const daysToShow = 31; // Show last 31 days
+  const daysToShow = 31;
 
-  // Generate array of dates
   const dates = Array.from({ length: daysToShow }, (_, i) => {
     const date = new Date();
     date.setDate(today.getDate() - i);
     return date.toISOString().split('T')[0];
   });
 
-  // Process data for the calendar
   const processData = (data) => {
     const dailyData = new Map();
     
@@ -74,7 +71,6 @@ const HealthHeatCalendar = ({ history = [] }) => {
     if (!count) return 'bg-gray-100';
     if (count === 1) return 'bg-blue-200';
     if (count === 2) return 'bg-blue-400';
-    if (count === 3) return 'bg-blue-600';
     return 'bg-blue-800';
   };
 
@@ -89,7 +85,6 @@ const HealthHeatCalendar = ({ history = [] }) => {
     return '';
   };
 
-  // Get all unique sensitivities from the data
   const sensitivities = Array.from(new Set(
     history
       .filter(entry => entry.type === 'food' && Array.isArray(entry.sensitivities))
@@ -104,14 +99,15 @@ const HealthHeatCalendar = ({ history = [] }) => {
         <div className="flex">
           {/* Fixed labels column */}
           <div className="flex-none w-16 pr-2">
-            <div className="h-7 flex items-center pt-5">
+            <div className="h-6" /> {/* Spacer for date row */}
+            <div className="h-7 flex items-center mt-2">
               <span className="text-xs font-medium text-gray-600">Energy</span>
             </div>
-            <div className="h-7 flex items-center pt-1">
+            <div className="h-7 flex items-center mt-1">
               <span className="text-xs font-medium text-gray-600">Stomach</span>
             </div>
             {sensitivities.map(sensitivity => (
-              <div key={sensitivity} className="h-7 flex items-center pt-1">
+              <div key={sensitivity} className="h-7 flex items-center mt-1">
                 <span className="text-xs font-medium text-gray-600 capitalize">{sensitivity}</span>
               </div>
             ))}
@@ -120,26 +116,24 @@ const HealthHeatCalendar = ({ history = [] }) => {
           {/* Scrollable content */}
           <div className="flex-1 overflow-x-auto">
             <div className="inline-flex min-w-full">
-              {/* Date labels and boxes */}
               <div className="flex">
                 {dates.map((date, index) => (
                   <div key={date} className="flex flex-col w-7">
-                    <div className="h-5 flex items-center justify-center whitespace-nowrap px-1">
-                      <span className="text-[10px] text-gray-500">
-                        {formatDateLabel(date, index)}
-                      </span>
+                    <div className="h-6 relative -mt-4">
+                      <div className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap">
+                        <span className="text-[8px] text-gray-500">
+                          {formatDateLabel(date, index)}
+                        </span>
+                      </div>
                     </div>
-                    {/* Energy row */}
-                    <div className="h-7 px-0.5">
+                    <div className="h-7 flex items-center mt-2 px-0.5">
                       <div className={`w-6 h-6 rounded-sm ${getEnergyColor(dailyData.get(date)?.energy)}`} />
                     </div>
-                    {/* Stomach row */}
-                    <div className="h-7 px-0.5">
+                    <div className="h-7 flex items-center mt-1 px-0.5">
                       <div className={`w-6 h-6 rounded-sm ${getStomachColor(dailyData.get(date)?.stomach)}`} />
                     </div>
-                    {/* Sensitivity rows */}
                     {sensitivities.map(sensitivity => (
-                      <div key={sensitivity} className="h-7 px-0.5">
+                      <div key={sensitivity} className="h-7 flex items-center mt-1 px-0.5">
                         <div className={`w-6 h-6 rounded-sm ${
                           getFoodIntensity(dailyData.get(date)?.sensitivities.get(sensitivity))
                         }`} />
@@ -177,15 +171,15 @@ const HealthHeatCalendar = ({ history = [] }) => {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-blue-200 rounded-sm"></div>
-              <span>1 occurrence</span>
+              <span>Once</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-blue-600 rounded-sm"></div>
-              <span>2-3 occurrences</span>
+              <div className="w-4 h-4 bg-blue-400 rounded-sm"></div>
+              <span>Twice</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-blue-800 rounded-sm"></div>
-              <span>3+ occurrences</span>
+              <span>3+ times</span>
             </div>
           </div>
         </div>
