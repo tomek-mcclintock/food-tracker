@@ -25,8 +25,53 @@ export async function POST(request) {
           content: [
             {
               type: "text",
-              text: "Analyze this food image carefully and thoroughly. Return a JSON object with exactly this format: { \"mainItem\": \"detailed name of the dish\", \"ingredients\": [\"ingredient1\", \"ingredient2\"], \"sensitivities\": [\"dairy\", \"gluten\", \"nuts\", \"soy\", \"eggs\", \"fish\", \"shellfish\", \"spicy\", \"citrus\", \"nightshades\"] }. Include sensitivities only if they are present in the dish."
-            },
+              text: `Automatic food detection has identified these items: ${predictions.join(', ')}. 
+    
+These predictions are from reliable food recognition software and should be considered accurate. Analyze this food and use these predictions to enhance your analysis.
+
+Return a JSON object with exactly this format:
+{
+  "mainItem": "detailed name of the dish",
+  "ingredients": ["ingredient1", "ingredient2", ...],
+  "sensitivities": [
+    "dairy",      // milk, cheese, butter, cream, yogurt
+    "gluten",     // wheat, barley, rye
+    "nuts",       // all tree nuts and peanuts
+    "soy",        // soybeans and soy products
+    "eggs",
+    "fish",
+    "shellfish",
+    "nightshades", // potatoes, tomatoes, peppers, eggplant
+    "caffeine",    // coffee, tea, chocolate, cola
+    "histamine",   // aged cheeses, fermented foods, cured meats
+    "sulfites",    // wine, dried fruits, processed foods
+    "fructose",    // fruits, honey, HFCS
+    "fodmap",      // garlic, onion, wheat, certain fruits
+    "cruciferous", // broccoli, cauliflower, cabbage, brussels sprouts
+    "alliums",     // garlic, onions, leeks, chives
+    "citrus",      // oranges, lemons, limes, grapefruit
+    "legumes",     // beans, peas, lentils, peanuts
+    "corn",
+    "salicylates", // many fruits, vegetables, spices, mint
+    "spicy"        // chili peppers, hot spices
+  ]
+}
+
+Important:
+- Include ALL items detected by the automatic detection
+- Add any additional ingredients you can see
+- Include common ingredients used in these dishes even if not visible
+- Include sensitivities for both main dishes and side items
+- Be thorough in checking for ALL sensitivity categories that apply
+- Common relationships to remember:
+  * French fries → nightshades (potatoes)
+  * Chocolate desserts → caffeine
+  * Pickled/fermented items → histamine
+  * Sauces often contain alliums (garlic/onion)
+  * Many seasonings contain salicylates
+  * Pre-made sauces often contain sulfites
+  * Breads/buns contain gluten and often corn
+  * Most condiments contain FODMAP ingredients`            },
             {
               type: "image",
               source: {
