@@ -20,11 +20,12 @@ export async function POST(request) {
         model: "gpt-4o",
         messages: [
           {
+            role: "system",
+            content: "You are an assistant that analyzes food images and provides detailed JSON outputs."
+          },
+          {
             role: "user",
-            content: [
-              {
-                type: "text",
-                text: `Analyze this food and:
+            content: `Analyze this food and:
 
 Return a JSON object with exactly this format:
 {
@@ -69,19 +70,22 @@ Important:
   * Pre-made sauces often contain sulfites
   * Breads/buns contain gluten and often corn
   * Most condiments contain FODMAP ingredients`
-              },
-              {
-                type: "image_url",
-                image_url: {
-                  url: image
-                }
-              }
-            ]
-          }
-        ],
-        max_tokens: 1000
-      })
-    });
+},
+{
+  role: "assistant",
+  content: "Please provide the image for analysis."
+},
+{
+  role: "user",
+  content: {
+    type: "image_url",
+    url: image
+  }
+}
+],
+max_tokens: 1000
+})
+});
 
     const data = await response.json();
     
