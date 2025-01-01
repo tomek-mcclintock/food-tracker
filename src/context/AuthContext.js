@@ -41,9 +41,21 @@ export const AuthContextProvider = ({ children }) => {
 
   const signInWithGoogle = async () => {
     try {
-      const result = await signInWithPopup(auth, googleProvider);
+      const provider = new GoogleAuthProvider();
+      // Add these lines to customize the mobile experience
+      provider.setCustomParameters({
+        prompt: 'select_account',
+        // Use relative path for redirect
+        redirect_uri: `${window.location.origin}/history`
+      });
+      
+      const result = await signInWithPopup(auth, provider);
+      
+      // Use Next.js router instead of window.location
+      window.location.replace('/history');
       return result;
     } catch (error) {
+      console.error('Google Sign In Error:', error);
       throw error;
     }
   };
