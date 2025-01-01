@@ -3,11 +3,13 @@
 import React, { useEffect, useState } from 'react';
 import { Download, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { usePathname } from 'next/navigation'; // Add this import
 
 const InstallPrompt = () => {
   const [installPrompt, setInstallPrompt] = useState(null);
   const [isIOS, setIsIOS] = useState(false);
   const [showBanner, setShowBanner] = useState(false);
+  const pathname = usePathname(); // Add this
 
   useEffect(() => {
     const checkInstallState = () => {
@@ -16,7 +18,12 @@ const InstallPrompt = () => {
         return false;
       }
 
-      // Check if user has dismissed before
+      // Always show on login/signup pages unless dismissed in current session
+      if (pathname === '/login' || pathname === '/signup') {
+        return true;
+      }
+
+      // For other pages, check localStorage
       const hasInteracted = localStorage.getItem('installBannerInteracted');
       return !hasInteracted;
     };
@@ -35,12 +42,17 @@ const InstallPrompt = () => {
       };
 
       window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      
+      // For iOS or when no install prompt is triggered immediately
+      if (isIOSDevice || !installPrompt) {
+        setShowBanner(true);
+      }
 
       return () => {
         window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       };
     }
-  }, []);
+  }, [pathname]); // Add pathname to dependencies
 
   const handleInstallClick = async () => {
     if (!installPrompt) return;
@@ -51,14 +63,19 @@ const InstallPrompt = () => {
     // Wait for the user to respond to the prompt
     const { outcome } = await installPrompt.userChoice;
     
-    // Mark as interacted
-    localStorage.setItem('installBannerInteracted', 'true');
+    // Only store in localStorage if not on login/signup pages
+    if (pathname !== '/login' && pathname !== '/signup') {
+      localStorage.setItem('installBannerInteracted', 'true');
+    }
     setShowBanner(false);
     setInstallPrompt(null);
   };
 
   const handleDismiss = () => {
-    localStorage.setItem('installBannerInteracted', 'true');
+    // Only store in localStorage if not on login/signup pages
+    if (pathname !== '/login' && pathname !== '/signup') {
+      localStorage.setItem('installBannerInteracted', 'true');
+    }
     setShowBanner(false);
   };
 
