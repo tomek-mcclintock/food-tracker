@@ -3,13 +3,16 @@
 import React, { useEffect, useState } from 'react';
 import { Download, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { usePathname } from 'next/navigation'; // Add this import
+import { usePathname } from 'next/navigation';
 
 const InstallPrompt = () => {
   const [installPrompt, setInstallPrompt] = useState(null);
   const [isIOS, setIsIOS] = useState(false);
   const [showBanner, setShowBanner] = useState(false);
-  const pathname = usePathname(); // Add this
+  const pathname = usePathname();
+
+  // Check if we're on login/signup pages
+  const isAuthPage = pathname === '/login' || pathname === '/signup';
 
   useEffect(() => {
     const checkInstallState = () => {
@@ -82,7 +85,8 @@ const InstallPrompt = () => {
   if (!showBanner || (!installPrompt && !isIOS)) return null;
 
   return (
-    <div className="fixed bottom-20 left-4 right-4 bg-white rounded-lg shadow-lg border p-4 animate-slide-up z-50">
+    <div className={`fixed left-4 right-4 bg-white rounded-lg shadow-lg border p-4 animate-slide-up z-50 
+      ${isAuthPage ? 'bottom-4' : 'bottom-20'}`}>
       <div className="flex items-start gap-4">
         <div className="flex-1">
           <h3 className="font-medium mb-1">Install Food Tracker</h3>
