@@ -69,7 +69,7 @@ Important:
   * Pre-made sauces often contain sulfites
   * Breads/buns contain gluten and often corn
   * Most condiments contain FODMAP ingredients`
-  *           },
+              },
               {
                 type: "image_url",
                 image_url: {
