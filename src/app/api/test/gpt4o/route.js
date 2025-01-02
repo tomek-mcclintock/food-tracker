@@ -10,7 +10,6 @@ export async function POST(request) {
       return NextResponse.json({ error: 'OpenAI API key is not configured' }, { status: 500 });
     }
 
-    // Create the request body
     const requestBody = {
       model: "chatgpt-4o-latest",
       messages: [
@@ -51,7 +50,9 @@ Return a JSON object with exactly this format:
             },
             {
               type: "image_url",
-              url: image
+              image_url: {  // Changed this structure
+                url: `data:image/jpeg;base64,${image}`  // Added data URL prefix
+              }
             }
           ]
         }
@@ -59,9 +60,8 @@ Return a JSON object with exactly this format:
       max_tokens: 1000
     };
 
-    // Log the request body
-    console.log('Request body:', JSON.stringify(requestBody, null, 2));
-
+    console.log('Sending request to OpenAI...');
+    
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -73,10 +73,8 @@ Return a JSON object with exactly this format:
 
     const data = await response.json();
     
-    // Log the response for debugging
-    console.log('OpenAI Response:', JSON.stringify(data, null, 2));
-
     if (!response.ok) {
+      console.error('OpenAI API error:', data);
       return NextResponse.json({ error: data.error }, { status: response.status });
     }
 
@@ -85,7 +83,7 @@ Return a JSON object with exactly this format:
       analysis: JSON.parse(data.choices[0].message.content)
     });
   } catch (error) {
-    console.error('Full error:', error);
+    console.error('Server error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
