@@ -42,16 +42,24 @@ export const AuthContextProvider = ({ children }) => {
   const signInWithGoogle = async () => {
     try {
       const provider = new GoogleAuthProvider();
-      // Add these lines to customize the mobile experience
       provider.setCustomParameters({
         prompt: 'select_account',
-        // Use relative path for redirect
         redirect_uri: `${window.location.origin}/history`
       });
       
       const result = await signInWithPopup(auth, provider);
       
-      // Use Next.js router instead of window.location
+      // Check if this is their first sign in
+      const userSettingsRef = doc(db, 'userSettings', result.user.uid);
+      const userSettingsDoc = await getDoc(userSettingsRef);
+      
+      if (!userSettingsDoc.exists()) {
+        await setDoc(userSettingsRef, {
+          hasSeenWelcome: false,
+          createdAt: new Date().toISOString()
+        });
+      }
+      
       window.location.replace('/history');
       return result;
     } catch (error) {
@@ -59,6 +67,7 @@ export const AuthContextProvider = ({ children }) => {
       throw error;
     }
   };
+  
 
   const signup = async (email, password) => {
     try {

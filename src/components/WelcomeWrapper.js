@@ -13,24 +13,48 @@ export default function WelcomeWrapper() {
 
   useEffect(() => {
     const checkWelcomeStatus = async () => {
-      if (!user) return;
+      if (!user) {
+        console.log('No user found, skipping welcome check');
+        return;
+      }
+      
+      console.log('Checking welcome status for user:', user.uid);
       
       try {
-        const userDoc = await getDoc(doc(db, 'userSettings', user.uid));
+        const userSettingsRef = doc(db, 'userSettings', user.uid);
+        const userDoc = await getDoc(userSettingsRef);
         
-        if (!userDoc.exists() || !userDoc.data().hasSeenWelcome) {
+        console.log('User settings doc exists:', userDoc.exists());
+        console.log('User settings data:', userDoc.data());
+        
+        if (!userDoc.exists()) {
+          console.log('Setting showWelcome to true - new user');
           setShowWelcome(true);
-          // Mark as seen
-          await setDoc(doc(db, 'userSettings', user.uid), {
-            hasSeenWelcome: true
+          await setDoc(userSettingsRef, {
+            hasSeenWelcome: true,
+            createdAt: new Date().toISOString()
+          });
+        } else if (!userDoc.data().hasSeenWelcome) {
+          console.log('Setting showWelcome to true - existing user but hasnt seen welcome');
+          setShowWelcome(true);
+          await setDoc(userSettingsRef, {
+            hasSeenWelcome: true,
+            updatedAt: new Date().toISOString()
           }, { merge: true });
+        } else {
+          console.log('User has already seen welcome');
         }
       } catch (error) {
-        console.error('Error checking welcome status:', error);
+        console.error('Error in checkWelcomeStatus:', error);
       }
     };
 
-    checkWelcomeStatus();
+    // Add a small delay to ensure auth is fully initialized
+    const timer = setTimeout(() => {
+      checkWelcomeStatus();
+    }, 1000);
+
+    return () => clearTimeout(timer);
   }, [user]);
 
   if (!showWelcome) return null;

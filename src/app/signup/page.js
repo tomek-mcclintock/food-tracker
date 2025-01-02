@@ -18,21 +18,32 @@ export default function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
+  
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
     }
-
+  
     if (password.length < 6) {
       setError('Password must be at least 6 characters');
       return;
     }
-
+  
     setLoading(true);
     
     try {
-      await signup(email, password);
+      const userCredential = await signup(email, password);
+      
+      // Create userSettings document immediately after signup
+      try {
+        await setDoc(doc(db, 'userSettings', userCredential.user.uid), {
+          hasSeenWelcome: false,
+          createdAt: new Date().toISOString()
+        });
+      } catch (settingsError) {
+        console.error('Error creating user settings:', settingsError);
+      }
+      
       window.location.href = '/history';
     } catch (err) {
       setError('Failed to create account');
@@ -40,7 +51,7 @@ export default function Signup() {
     } finally {
       setLoading(false);
     }
-  };
+  };  
 
   const handleGoogleSignIn = async () => {
     setError('');
