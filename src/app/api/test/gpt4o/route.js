@@ -10,21 +10,16 @@ export async function POST(request) {
       return NextResponse.json({ error: 'OpenAI API key is not configured' }, { status: 500 });
     }
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
-      },
-      body: JSON.stringify({
-        model: "chatgpt-4o-latest",  // Changed this line
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: `Analyze this food and:
+    // Create the request body
+    const requestBody = {
+      model: "chatgpt-4o-latest",
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: `Analyze this food and:
 
 Return a JSON object with exactly this format:
 {
@@ -52,37 +47,35 @@ Return a JSON object with exactly this format:
     "salicylates", // many fruits, vegetables, spices, mint
     "spicy"        // chili peppers, hot spices
   ]
-}
+}`
+            },
+            {
+              type: "image_url",
+              url: image
+            }
+          ]
+        }
+      ],
+      max_tokens: 1000
+    };
 
-Important:
-- Include ALL items detected by the automatic detection
-- Add any additional ingredients you can see
-- Include common ingredients used in these dishes even if not visible
-- Include sensitivities for both main dishes and side items
-- Be thorough in checking for ALL sensitivity categories that apply
-- Common relationships to remember:
-  * French fries → nightshades (potatoes)
-  * Chocolate desserts → caffeine
-  * Pickled/fermented items → histamine
-  * Sauces often contain alliums (garlic/onion)
-  * Many seasonings contain salicylates
-  * Pre-made sauces often contain sulfites
-  * Breads/buns contain gluten and often corn
-  * Most condiments contain FODMAP ingredients`
-              },
-              {
-                type: "image_url",
-                url: image
-              }
-            ]
-          }
-        ],
-        max_tokens: 1000
-      })
+    // Log the request body
+    console.log('Request body:', JSON.stringify(requestBody, null, 2));
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify(requestBody)
     });
 
     const data = await response.json();
     
+    // Log the response for debugging
+    console.log('OpenAI Response:', JSON.stringify(data, null, 2));
+
     if (!response.ok) {
       return NextResponse.json({ error: data.error }, { status: response.status });
     }
@@ -92,6 +85,7 @@ Important:
       analysis: JSON.parse(data.choices[0].message.content)
     });
   } catch (error) {
+    console.error('Full error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
