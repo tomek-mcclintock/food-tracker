@@ -115,3 +115,24 @@ body {
 .animate-slide-up {
   animation: menuSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  transition: opacity 0.2s;
+}
+
+/* For highlighted elements during welcome flow */
+[class*="-button"]:not(.highlighted),
+[class*="-tab"]:not(.highlighted) {
+  filter: brightness(0.5);
+  transition: filter 0.2s;
+}
+
+.highlighted {
+  position: relative;
+  z-index: 50;
+  filter: brightness(1);
+  transition: filter 0.2s;
+}

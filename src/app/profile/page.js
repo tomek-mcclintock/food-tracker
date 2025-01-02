@@ -147,24 +147,24 @@ const Profile = () => {
      <Card className="mb-6">
        <CardContent className="pt-6 space-y-4">
          <Button 
-           variant="outline"
-           className="w-full"
-           onClick={resetData}
-           disabled={loading}
-         >
-           <RefreshCcw className="w-4 h-4 mr-2" />
-           Reset Data
-         </Button>
+            variant="outline"
+            className="w-full reset-data-button"  // Added class
+            onClick={resetData}
+            disabled={loading}
+          >
+            <RefreshCcw className="w-4 h-4 mr-2" />
+            Reset Data
+          </Button>
 
-         <Button 
-           variant="outline"
-           className="w-full"
-           onClick={addExampleData}
-           disabled={loading}
-         >
-           <Database className="w-4 h-4 mr-2" />
-           Add Example Data
-         </Button>
+          <Button 
+            variant="outline"
+            className="w-full example-data-button"  // Added class
+            onClick={addExampleData}
+            disabled={loading}
+          >
+            <Database className="w-4 h-4 mr-2" />
+            Add Example Data
+          </Button>
 
          <InstallButton />
 
