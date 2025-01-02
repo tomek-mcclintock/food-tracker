@@ -1,6 +1,4 @@
 // src/components/WelcomeModal.js
-"use client"
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
@@ -27,7 +25,7 @@ const steps = [
   },
   {
     title: "View Insights",
-    content: "See patterns between foods and symptoms in the Insights tab to understand your sensitivities better.",
+    content: "See patterns between foods and symptoms in the Insights tab to better understand your sensitivities.",
     highlight: ".insights-tab",
     position: "bottom"
   },
@@ -50,38 +48,42 @@ export default function WelcomeModal({ onClose }) {
   const [showModal, setShowModal] = useState(true);
   const router = useRouter();
 
-  // Toggle menu expansion when needed
   useEffect(() => {
     const currentStepData = steps[currentStep];
+    let addButton = null;
+
+    // Handle menu expansion/collapse
     if (currentStepData?.shouldExpandMenu) {
-      // Find and click the add button to expand menu
-      const addButton = document.querySelector('.add-button');
+      // Expand menu
+      addButton = document.querySelector('.add-button');
+      addButton?.click();
+    } else if (steps[currentStep - 1]?.shouldExpandMenu) {
+      // Collapse menu if we just left a step that had it expanded
+      addButton = document.querySelector('.add-button');
       addButton?.click();
     }
     
-    // Add overlay styling
+    // Create and style the overlay
     const overlay = document.createElement('div');
     overlay.className = 'fixed inset-0 bg-black/60 transition-opacity z-40';
     document.body.appendChild(overlay);
 
-    // Highlight the target element
+    // Add a class to the target element and dim everything else
     if (currentStepData?.highlight) {
+      document.body.classList.add('welcome-flow-active');
       const target = document.querySelector(currentStepData.highlight);
       if (target) {
-        target.style.position = 'relative';
-        target.style.zIndex = '50';
-        target.style.filter = 'brightness(1)';
+        target.classList.add('welcome-highlight');
       }
     }
 
     return () => {
+      // Cleanup
       overlay.remove();
-      // Clean up any styles we added
+      document.body.classList.remove('welcome-flow-active');
       const target = document.querySelector(currentStepData?.highlight);
       if (target) {
-        target.style.position = '';
-        target.style.zIndex = '';
-        target.style.filter = '';
+        target.classList.remove('welcome-highlight');
       }
     };
   }, [currentStep]);

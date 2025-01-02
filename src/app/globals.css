@@ -116,23 +116,18 @@ body {
   animation: menuSlideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  transition: opacity 0.2s;
-}
-
-/* For highlighted elements during welcome flow */
-[class*="-button"]:not(.highlighted),
-[class*="-tab"]:not(.highlighted) {
-  filter: brightness(0.5);
+/* Welcome Flow Styles */
+.welcome-flow-active * {
+  filter: brightness(0.5) !important;
   transition: filter 0.2s;
 }
 
-.highlighted {
+.welcome-highlight {
+  filter: brightness(1) !important;
   position: relative;
   z-index: 50;
-  filter: brightness(1);
-  transition: filter 0.2s;
+}
+
+.welcome-flow-active .rounded-xl {
+  filter: brightness(1) !important;
 }
