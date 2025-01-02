@@ -10,7 +10,7 @@ const ModelTest = () => {
   const [results, setResults] = useState({
     clarifai: null,
     sonnet: { withClarifai: null, withoutClarifai: null },
-    gpt4v: { withClarifai: null, withoutClarifai: null }
+    gpt4o: { withClarifai: null, withoutClarifai: null }
   });
 
   const handleImageSelect = (e) => {
@@ -23,8 +23,8 @@ const ModelTest = () => {
   };
 
   const getEndpoint = (model, withClarifai) => {
-    if (model === 'gpt4v') {
-      return withClarifai ? '/api/test/gpt4vTest' : '/api/test/gpt4v';
+    if (model === 'gpt4o') {
+      return withClarifai ? '/api/test/gpt4oTest' : '/api/test/gpt4o';
     }
     return withClarifai ? '/api/test/combinedTest' : '/api/test/claude';
   };  
@@ -36,7 +36,7 @@ const ModelTest = () => {
     
     try {
       // Test each model
-      const models = ['sonnet', 'gpt4v'];
+      const models = ['sonnet', 'gpt4o'];
       
       for (const model of models) {
         // Without Clarifai only
@@ -119,8 +119,8 @@ const ModelTest = () => {
         <ModelResults modelResults={results.sonnet} title="Claude 3 Sonnet Results" />
       )}
 
-        {results.gpt4v.withoutClarifai && (
-        <ModelResults modelResults={results.gpt4v} title="GPT-4-Vision Results" />
+        {results.gpt4o.withoutClarifai && (
+        <ModelResults modelResults={results.gpt4o} title="GPT-4-Vision Results" />
         )}
 
     </div>
