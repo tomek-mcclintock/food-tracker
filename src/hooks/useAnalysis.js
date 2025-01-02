@@ -13,12 +13,14 @@ export function useAnalysis() {
     setError(null);
     
     try {
-      const content = [{
-        type: "text",
-        text: description 
-          ? `Analyze this food: ${description}`
-          : "Analyze this food."
-      }];
+      const content = [];
+
+      if (description) {
+        content.push({
+          type: "text",
+          text: description
+        });
+      }
 
       if (imageSrc) {
         const base64Data = imageSrc.split('base64,')[1];
@@ -26,7 +28,6 @@ export function useAnalysis() {
           type: "image",
           source: {
             type: "base64",
-            media_type: "image/jpeg",
             data: base64Data
           }
         });
@@ -36,8 +37,6 @@ export function useAnalysis() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          model: "claude-3-haiku-20240307",
-          max_tokens: 1024,
           messages: [{
             role: "user",
             content: content
@@ -51,8 +50,7 @@ export function useAnalysis() {
       }
 
       const data = await response.json();
-      const parsedResults = JSON.parse(data.content[0].text);
-      setResults(parsedResults);
+      setResults(data);
 
     } catch (err) {
       console.error('Error in analyzeFood:', err);
@@ -62,5 +60,5 @@ export function useAnalysis() {
     }
   }, []);
 
-  return { analyzing, results, error, analyzeFood, setResults };  // Added setResults here
-};
+  return { analyzing, results, error, analyzeFood, setResults };
+}
