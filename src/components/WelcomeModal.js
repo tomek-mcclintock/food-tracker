@@ -15,13 +15,13 @@ const steps = [
       title: "Add Food",
       content: "Press the + button to add foods. Take photos or describe your meals - our AI will analyze ingredients and potential sensitivities.",
       highlight: ".add-button",
-      position: "top"  // Changed to top
+      position: "bottom"  // Changed to bottom
     },
     {
       title: "Track Wellness",
       content: "Log how you feel after meals by using the Check In option in the + menu. This helps identify patterns and sensitivities.",
       highlight: ".wellness-button",
-      position: "top",  // Changed to top
+      position: "centre",  // Changed to top
       shouldExpandMenu: true
     },
     {

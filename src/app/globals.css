@@ -128,8 +128,3 @@ body {
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5) !important;
   border-radius: 0.5rem;
 }
-
-/* Ensure bottom nav stays above overlay */
-.bottom-0 {
-  z-index: 51;
-}
