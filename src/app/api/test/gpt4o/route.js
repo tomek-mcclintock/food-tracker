@@ -10,6 +10,9 @@ export async function POST(request) {
       return NextResponse.json({ error: 'OpenAI API key is not configured' }, { status: 500 });
     }
 
+    // Ensure the image is properly formatted as a data URL
+    const dataUrl = image.startsWith('data:') ? image : `data:image/jpeg;base64,${image}`;
+
     const requestBody = {
       model: "gpt-4o",
       messages: [
@@ -23,7 +26,7 @@ export async function POST(request) {
             {
               type: "image_url",
               image_url: {
-                "url": image
+                "url": dataUrl
               }
             }
           ]
