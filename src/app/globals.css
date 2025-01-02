@@ -117,17 +117,12 @@ body {
 }
 
 /* Welcome Flow Styles */
-.welcome-flow-active * {
-  filter: brightness(0.5) !important;
-  transition: filter 0.2s;
-}
-
-.welcome-highlight {
-  filter: brightness(1) !important;
-  position: relative;
+.welcome-overlay {
+  background: rgba(0, 0, 0, 0.5);
   z-index: 50;
 }
 
-.welcome-flow-active .rounded-xl {
-  filter: brightness(1) !important;
+.welcome-highlight {
+  position: relative;
+  z-index: 55;
 }

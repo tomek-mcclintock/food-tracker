@@ -1,4 +1,5 @@
-// src/components/WelcomeModal.js
+"use client"
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
@@ -54,23 +55,26 @@ export default function WelcomeModal({ onClose }) {
 
     // Handle menu expansion/collapse
     if (currentStepData?.shouldExpandMenu) {
-      // Expand menu
       addButton = document.querySelector('.add-button');
       addButton?.click();
     } else if (steps[currentStep - 1]?.shouldExpandMenu) {
-      // Collapse menu if we just left a step that had it expanded
       addButton = document.querySelector('.add-button');
       addButton?.click();
     }
     
-    // Create and style the overlay
+    // Remove any existing overlays first
+    const existingOverlay = document.querySelector('.welcome-overlay');
+    if (existingOverlay) {
+      existingOverlay.remove();
+    }
+
+    // Create single overlay
     const overlay = document.createElement('div');
-    overlay.className = 'fixed inset-0 bg-black/60 transition-opacity z-40';
+    overlay.className = 'welcome-overlay fixed inset-0 transition-opacity duration-200';
     document.body.appendChild(overlay);
 
-    // Add a class to the target element and dim everything else
+    // Add a class to the target element
     if (currentStepData?.highlight) {
-      document.body.classList.add('welcome-flow-active');
       const target = document.querySelector(currentStepData.highlight);
       if (target) {
         target.classList.add('welcome-highlight');
@@ -79,8 +83,10 @@ export default function WelcomeModal({ onClose }) {
 
     return () => {
       // Cleanup
-      overlay.remove();
-      document.body.classList.remove('welcome-flow-active');
+      const overlayToRemove = document.querySelector('.welcome-overlay');
+      if (overlayToRemove) {
+        overlayToRemove.remove();
+      }
       const target = document.querySelector(currentStepData?.highlight);
       if (target) {
         target.classList.remove('welcome-highlight');
@@ -112,14 +118,10 @@ export default function WelcomeModal({ onClose }) {
   const isLastStep = currentStep === steps.length - 1;
 
   return (
-    <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ pointerEvents: 'none' }}
-    >
+    <div className="fixed inset-0 z-[60] flex items-center justify-center">
       <div 
-        className={`bg-white rounded-xl max-w-sm w-full p-6 space-y-4 shadow-xl
+        className={`bg-white rounded-xl max-w-sm w-full p-6 space-y-4 shadow-xl relative z-[70]
           ${currentStepData.position === 'bottom' ? 'self-end mb-24' : 'self-center'}`}
-        style={{ pointerEvents: 'auto' }}
       >
         <h2 className="text-xl font-bold">{currentStepData.title}</h2>
         <p className="text-gray-600">{currentStepData.content}</p>
