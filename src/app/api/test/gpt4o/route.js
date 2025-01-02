@@ -5,7 +5,6 @@ export async function POST(request) {
     const { image } = await request.json();
 
     if (!process.env.OPENAI_API_KEY) {
-      console.error('OpenAI API key is not configured');
       return NextResponse.json({ error: 'OpenAI API key is not configured' }, { status: 500 });
     }
 
@@ -19,7 +18,51 @@ export async function POST(request) {
           content: [
             { 
               type: "text", 
-              text: "Analyze this food and return a JSON object with exactly this format: { \"mainItem\": \"detailed name of the dish\", \"ingredients\": [\"ingredient1\", \"ingredient2\"], \"sensitivities\": [\"dairy\", \"gluten\", \"nuts\", \"soy\", \"eggs\", \"fish\", \"shellfish\", \"nightshades\", \"caffeine\", \"histamine\", \"sulfites\", \"fructose\", \"fodmap\", \"cruciferous\", \"alliums\", \"citrus\", \"legumes\", \"corn\", \"salicylates\", \"spicy\"] }" 
+              text: `Analyze this food and:
+
+Return a JSON object with exactly this format:
+{
+  "mainItem": "detailed name of the dish",
+  "ingredients": ["ingredient1", "ingredient2", ...],
+  "sensitivities": [
+    "dairy",      // milk, cheese, butter, cream, yogurt
+    "gluten",     // wheat, barley, rye
+    "nuts",       // all tree nuts and peanuts
+    "soy",        // soybeans and soy products
+    "eggs",
+    "fish",
+    "shellfish",
+    "nightshades", // potatoes, tomatoes, peppers, eggplant
+    "caffeine",    // coffee, tea, chocolate, cola
+    "histamine",   // aged cheeses, fermented foods, cured meats
+    "sulfites",    // wine, dried fruits, processed foods
+    "fructose",    // fruits, honey, HFCS
+    "fodmap",      // garlic, onion, wheat, certain fruits
+    "cruciferous", // broccoli, cauliflower, cabbage, brussels sprouts
+    "alliums",     // garlic, onions, leeks, chives
+    "citrus",      // oranges, lemons, limes, grapefruit
+    "legumes",     // beans, peas, lentils, peanuts
+    "corn",
+    "salicylates", // many fruits, vegetables, spices, mint
+    "spicy"        // chili peppers, hot spices
+  ]
+}
+
+Important:
+- Include ALL items detected by the automatic detection
+- Add any additional ingredients you can see
+- Include common ingredients used in these dishes even if not visible
+- Include sensitivities for both main dishes and side items
+- Be thorough in checking for ALL sensitivity categories that apply
+- Common relationships to remember:
+  * French fries → nightshades (potatoes)
+  * Chocolate desserts → caffeine
+  * Pickled/fermented items → histamine
+  * Sauces often contain alliums (garlic/onion)
+  * Many seasonings contain salicylates
+  * Pre-made sauces often contain sulfites
+  * Breads/buns contain gluten and often corn
+  * Most condiments contain FODMAP ingredients` 
             },
             {
               type: "image_url",
@@ -44,7 +87,6 @@ export async function POST(request) {
     const data = await response.json();
     
     if (!response.ok) {
-      console.error('OpenAI API error:', data);
       return NextResponse.json({ error: data.error }, { status: response.status });
     }
 
@@ -60,7 +102,6 @@ export async function POST(request) {
         analysis: parsedContent
       });
     } catch (parseError) {
-      console.error('JSON Parse Error:', parseError);
       return NextResponse.json({
         error: 'JSON parsing failed',
         rawContent: data.choices[0].message.content
@@ -68,7 +109,6 @@ export async function POST(request) {
     }
 
   } catch (error) {
-    console.error('Server error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
