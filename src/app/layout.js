@@ -1,10 +1,11 @@
+// src/app/layout.js
 import { Inter } from "next/font/google";
 import "./globals.css";
 import './sw';
 import BottomNav from "@/components/BottomNav";
 import { AuthContextProvider } from "@/context/AuthContext";
 import InstallPrompt from '@/components/InstallPrompt';
-import WelcomeModal from "@/components/WelcomeModal";
+import WelcomeWrapper from '@/components/WelcomeWrapper';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -33,8 +34,8 @@ export default function RootLayout({ children }) {
       </head>
       <body className={inter.className}>
         <AuthContextProvider>
-          <InstallPrompt /> {/* Moved outside of main content area */}
-          {user && <WelcomeModal />}
+          <InstallPrompt />
+          <WelcomeWrapper />
           <main className="container mx-auto p-4">
             {children}
           </main>
