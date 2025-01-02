@@ -41,7 +41,7 @@ Return a JSON object with exactly this format:
   "recentPattern": "What happened in last 48h (based on the latest entries)",
   "historicalPattern": "Key trends or changes you notice comparing earlier vs later entries in the 2-week period",
   "suggestion": "Brief, actionable suggestion based on what you notice. Encourage continued tracking",
-  "ingredients": ["ingredient1", "ingredient2"] // List 1-3 ingredients that might be affecting wellness, if any patterns exist
+  "ingredients": ["ingredient1", "ingredient2"] // List 1-5 ingredients that might be affecting wellness, if any patterns exist
 }
 
 Keep insights concise and personal, using "you" when speaking to the user.`;

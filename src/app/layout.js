@@ -4,6 +4,7 @@ import './sw';
 import BottomNav from "@/components/BottomNav";
 import { AuthContextProvider } from "@/context/AuthContext";
 import InstallPrompt from '@/components/InstallPrompt';
+import WelcomeModal from "@/components/WelcomeModal";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -33,6 +34,7 @@ export default function RootLayout({ children }) {
       <body className={inter.className}>
         <AuthContextProvider>
           <InstallPrompt /> {/* Moved outside of main content area */}
+          {user && <WelcomeModal />}
           <main className="container mx-auto p-4">
             {children}
           </main>

@@ -47,20 +47,22 @@ const BottomNav = () => {
           
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className={`relative -mt-6 rounded-full bg-blue-500 p-4 text-white shadow-lg transition-transform ${
+            className={`relative -mt-6 rounded-full bg-blue-500 p-4 text-white shadow-lg transition-transform add-button ${
               isMenuOpen ? 'rotate-45' : ''
             }`}
           >
             <Plus className="w-6 h-6" />
           </button>
+
           
           <Link 
             href="/insights" 
-            className={`flex flex-col items-center w-16 p-2 ${pathname === '/insights' ? 'text-blue-500' : 'text-gray-500'}`}
+            className={`flex flex-col items-center w-16 p-2 insights-tab ${pathname === '/insights' ? 'text-blue-500' : 'text-gray-500'}`}
           >
             <LineChart className="w-6 h-6" />
             <span className="text-xs mt-0.5">Insights</span>
           </Link>
+
           
           <Link 
             href="/profile" 

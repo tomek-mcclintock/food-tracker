@@ -106,7 +106,7 @@ const AddOptionsMenu = ({ isOpen, onClose, onCheckIn }) => {
 
               {/* Separate Check In option */}
               <button
-                className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-green-50 transition-all duration-200 hover:shadow-md active:scale-98 mt-1 border-t border-gray-100 pt-3 w-full text-left"
+                className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-green-50 transition-all duration-200 hover:shadow-md active:scale-98 mt-1 border-t border-gray-100 pt-3 w-full text-left wellness-button"
                 onClick={() => {
                   onClose();
                   onCheckIn();
