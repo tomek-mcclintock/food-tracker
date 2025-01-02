@@ -10,7 +10,6 @@ export async function POST(request) {
       return NextResponse.json({ error: 'OpenAI API key is not configured' }, { status: 500 });
     }
 
-    // Ensure the image is properly formatted as a data URL
     const dataUrl = image.startsWith('data:') ? image : `data:image/jpeg;base64,${image}`;
 
     const requestBody = {
@@ -21,7 +20,7 @@ export async function POST(request) {
           content: [
             { 
               type: "text", 
-              text: "Analyze this food and return a JSON object with exactly this format: { \"mainItem\": \"detailed name of the dish\", \"ingredients\": [\"ingredient1\", \"ingredient2\"], \"sensitivities\": [\"dairy\", \"gluten\", \"nuts\", \"soy\", \"eggs\", \"fish\", \"shellfish\", \"nightshades\", \"caffeine\", \"histamine\", \"sulfites\", \"fructose\", \"fodmap\", \"cruciferous\", \"alliums\", \"citrus\", \"legumes\", \"corn\", \"salicylates\", \"spicy\"] }" 
+              text: "Return a simple JSON object describing this food in this format: {\"mainItem\": \"name\"}" 
             },
             {
               type: "image_url",
@@ -34,8 +33,6 @@ export async function POST(request) {
       ]
     };
 
-    console.log('Sending request to OpenAI...');
-    
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -52,10 +49,24 @@ export async function POST(request) {
       return NextResponse.json({ error: data.error }, { status: response.status });
     }
 
-    return NextResponse.json({
-      model: 'gpt4o',
-      analysis: JSON.parse(data.choices[0].message.content)
-    });
+    // Debug logging
+    console.log('Raw GPT response content:', data.choices[0].message.content);
+
+    try {
+      const parsedContent = JSON.parse(data.choices[0].message.content.trim());
+      return NextResponse.json({
+        model: 'gpt4o',
+        analysis: parsedContent,
+        rawContent: data.choices[0].message.content // Include raw content for debugging
+      });
+    } catch (parseError) {
+      console.error('JSON Parse Error:', parseError);
+      return NextResponse.json({
+        error: 'JSON parsing failed',
+        rawContent: data.choices[0].message.content
+      }, { status: 500 });
+    }
+
   } catch (error) {
     console.error('Server error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
