@@ -35,28 +35,39 @@ const ModelTest = () => {
     const base64Data = image.split('base64,')[1];
     
     try {
-      // Test each model
-      const models = ['sonnet', 'gpt4o'];
-      
-      for (const model of models) {
-        // Without Clarifai only
-        const response = await fetch('/api/test/claude', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            image: base64Data,
-            model: model 
-          })
-        });
-        const results = await response.json();
-        
-        setResults(prev => ({
-          ...prev,
-          [model]: {
-            withoutClarifai: results
-          }
-        }));
-      }
+      // Test Sonnet
+      const sonnetResponse = await fetch('/api/test/claude', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          image: base64Data,
+          model: 'sonnet' 
+        })
+      });
+      const sonnetResults = await sonnetResponse.json();
+      setResults(prev => ({
+        ...prev,
+        sonnet: {
+          withoutClarifai: sonnetResults
+        }
+      }));
+  
+      // Test GPT-4o
+      const gptResponse = await fetch('/api/test/gpt4o', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          image: base64Data
+        })
+      });
+      const gptResults = await gptResponse.json();
+      setResults(prev => ({
+        ...prev,
+        gpt4o: {
+          withoutClarifai: gptResults
+        }
+      }));
+  
     } catch (error) {
       console.error('Error running tests:', error);
     } finally {
