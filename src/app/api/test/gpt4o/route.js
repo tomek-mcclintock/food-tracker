@@ -11,53 +11,24 @@ export async function POST(request) {
     }
 
     const requestBody = {
-      model: "chatgpt-4o-latest",
+      model: "gpt-4o",
       messages: [
         {
           role: "user",
           content: [
-            {
-              type: "text",
-              text: `Analyze this food and:
-
-Return a JSON object with exactly this format:
-{
-  "mainItem": "detailed name of the dish",
-  "ingredients": ["ingredient1", "ingredient2", ...],
-  "sensitivities": [
-    "dairy",      // milk, cheese, butter, cream, yogurt
-    "gluten",     // wheat, barley, rye
-    "nuts",       // all tree nuts and peanuts
-    "soy",        // soybeans and soy products
-    "eggs",
-    "fish",
-    "shellfish",
-    "nightshades", // potatoes, tomatoes, peppers, eggplant
-    "caffeine",    // coffee, tea, chocolate, cola
-    "histamine",   // aged cheeses, fermented foods, cured meats
-    "sulfites",    // wine, dried fruits, processed foods
-    "fructose",    // fruits, honey, HFCS
-    "fodmap",      // garlic, onion, wheat, certain fruits
-    "cruciferous", // broccoli, cauliflower, cabbage, brussels sprouts
-    "alliums",     // garlic, onions, leeks, chives
-    "citrus",      // oranges, lemons, limes, grapefruit
-    "legumes",     // beans, peas, lentils, peanuts
-    "corn",
-    "salicylates", // many fruits, vegetables, spices, mint
-    "spicy"        // chili peppers, hot spices
-  ]
-}`
+            { 
+              type: "text", 
+              text: "Analyze this food and return a JSON object with exactly this format: { \"mainItem\": \"detailed name of the dish\", \"ingredients\": [\"ingredient1\", \"ingredient2\"], \"sensitivities\": [\"dairy\", \"gluten\", \"nuts\", \"soy\", \"eggs\", \"fish\", \"shellfish\", \"nightshades\", \"caffeine\", \"histamine\", \"sulfites\", \"fructose\", \"fodmap\", \"cruciferous\", \"alliums\", \"citrus\", \"legumes\", \"corn\", \"salicylates\", \"spicy\"] }" 
             },
             {
               type: "image_url",
-              image_url: {  // Changed this structure
-                url: `data:image/jpeg;base64,${image}`  // Added data URL prefix
+              image_url: {
+                "url": image
               }
             }
           ]
         }
-      ],
-      max_tokens: 1000
+      ]
     };
 
     console.log('Sending request to OpenAI...');
@@ -79,7 +50,7 @@ Return a JSON object with exactly this format:
     }
 
     return NextResponse.json({
-      model: 'chatgpt-4o',
+      model: 'gpt4o',
       analysis: JSON.parse(data.choices[0].message.content)
     });
   } catch (error) {
