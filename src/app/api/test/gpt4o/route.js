@@ -4,7 +4,6 @@ export async function POST(request) {
   try {
     const { image } = await request.json();
 
-    // Check if API key exists
     if (!process.env.OPENAI_API_KEY) {
       console.error('OpenAI API key is not configured');
       return NextResponse.json({ error: 'OpenAI API key is not configured' }, { status: 500 });
@@ -20,7 +19,7 @@ export async function POST(request) {
           content: [
             { 
               type: "text", 
-              text: "Return a simple JSON object describing this food in this format: {\"mainItem\": \"name\"}" 
+              text: "Analyze this food and return a JSON object with exactly this format: { \"mainItem\": \"detailed name of the dish\", \"ingredients\": [\"ingredient1\", \"ingredient2\"], \"sensitivities\": [\"dairy\", \"gluten\", \"nuts\", \"soy\", \"eggs\", \"fish\", \"shellfish\", \"nightshades\", \"caffeine\", \"histamine\", \"sulfites\", \"fructose\", \"fodmap\", \"cruciferous\", \"alliums\", \"citrus\", \"legumes\", \"corn\", \"salicylates\", \"spicy\"] }" 
             },
             {
               type: "image_url",
@@ -49,15 +48,16 @@ export async function POST(request) {
       return NextResponse.json({ error: data.error }, { status: response.status });
     }
 
-    // Debug logging
-    console.log('Raw GPT response content:', data.choices[0].message.content);
-
     try {
-      const parsedContent = JSON.parse(data.choices[0].message.content.trim());
+      const cleanContent = data.choices[0].message.content
+        .replace(/```json\n/, '')
+        .replace(/\n```/, '')
+        .trim();
+      
+      const parsedContent = JSON.parse(cleanContent);
       return NextResponse.json({
         model: 'gpt4o',
-        analysis: parsedContent,
-        rawContent: data.choices[0].message.content // Include raw content for debugging
+        analysis: parsedContent
       });
     } catch (parseError) {
       console.error('JSON Parse Error:', parseError);
