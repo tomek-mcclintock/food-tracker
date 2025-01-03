@@ -1,5 +1,3 @@
-"use client"
-
 import { NextResponse } from 'next/server';
 
 async function analyzeWithGPT4o(description = '', imageBase64 = null) {
