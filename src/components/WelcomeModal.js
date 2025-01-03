@@ -16,20 +16,33 @@ const steps = [
       title: "Add Food",
       content: "Press the + button to add foods. Take photos or describe your meals - our AI will analyze ingredients and potential sensitivities.",
       highlight: ".add-button",
-      position: "bottom"
+      position: "bottom",
+      modifyElement: (el) => {
+        el.style.backgroundColor = "rgb(59 130 246)";
+        el.style.color = "white";
+      }
     },
     {
       title: "Track Wellness",
       content: "Log how you feel after meals by using the Check In option in the + menu. This helps identify patterns and sensitivities.",
       highlight: ".wellness-button",
       position: "centre",
-      shouldExpandMenu: true
+      shouldExpandMenu: true,
+      modifyElement: (el) => {
+        el.style.color = "rgb(59 130 246)";
+        el.querySelector('span')?.style.setProperty('color', 'rgb(59 130 246)', 'important');
+      }
     },
     {
       title: "View Insights",
       content: "See patterns between foods and symptoms in the Insights tab to better understand your sensitivities.",
       highlight: ".insights-tab",
-      position: "bottom"
+      position: "bottom",
+      modifyElement: (el) => {
+        el.style.color = "rgb(59 130 246)";
+        el.querySelector('span')?.style.setProperty('color', 'rgb(59 130 246)', 'important');
+        el.querySelector('svg')?.style.setProperty('color', 'rgb(59 130 246)', 'important');
+      }
     },
     {
       title: "Try Example Data",
@@ -54,18 +67,25 @@ export default function WelcomeModal({ onClose }) {
     const currentStepData = steps[currentStep];
     let prevHighlight = steps[currentStep - 1]?.highlight;
     
-    // Clear previous highlights and restore all items to normal state
+    // Clean up previous highlights
     document.querySelectorAll('.welcome-highlight').forEach(el => {
-      el.classList.remove('welcome-highlight', 'z-[55]', 'text-blue-500');
+      el.classList.remove('welcome-highlight', 'z-[55]');
+      // Reset any direct styles
+      el.style.removeProperty('color');
+      el.style.removeProperty('background-color');
+      // Reset styles on child elements
+      el.querySelectorAll('*').forEach(child => {
+        child.style.removeProperty('color');
+      });
     });
-    
-    // Remove any existing overlays
+
+    // Remove existing overlay
     const existingOverlay = document.querySelector('.welcome-overlay');
     if (existingOverlay) {
       existingOverlay.remove();
     }
 
-    // Create overlay
+    // Create new overlay
     const overlay = document.createElement('div');
     overlay.className = 'welcome-overlay fixed inset-0 transition-opacity duration-200';
     document.body.appendChild(overlay);
@@ -83,40 +103,56 @@ export default function WelcomeModal({ onClose }) {
       const target = document.querySelector(currentStepData.highlight);
       if (target) {
         target.classList.add('welcome-highlight', 'z-[55]');
-        // For navigation items, also highlight the text
-        if (['.add-button', '.insights-tab', '.wellness-button'].includes(currentStepData.highlight)) {
-          target.classList.add('text-blue-500', 'brightness-150');
-          // For wellness button specifically
-          if (currentStepData.highlight === '.wellness-button') {
-            target.style.filter = 'brightness(1.2)';
-            target.style.opacity = '1';
-          }
+        // Apply any specific element modifications
+        if (currentStepData.modifyElement) {
+          currentStepData.modifyElement(target);
         }
       }
     }
 
+    // Cleanup function
     return () => {
-      // Cleanup
       if (currentStepData?.highlight) {
         const target = document.querySelector(currentStepData.highlight);
         if (target) {
-          target.classList.remove('welcome-highlight', 'z-[55]', 'text-blue-500', 'brightness-150');
-          if (target.classList.contains('wellness-button')) {
-            target.style.filter = '';
-            target.style.opacity = '';
-          }
+          target.classList.remove('welcome-highlight', 'z-[55]');
+          // Reset any directly applied styles
+          target.style.removeProperty('color');
+          target.style.removeProperty('background-color');
+          target.querySelectorAll('*').forEach(child => {
+            child.style.removeProperty('color');
+          });
         }
       }
-      // Ensure menu closes if we were highlighting the wellness button
-      if (prevHighlight === '.wellness-button' && addButton) {
-        setTimeout(() => {
-          if (addButton.classList.contains('rotate-45')) {
-            addButton.click();
-          }
-        }, 0);
-      }
     };
-}, [currentStep]);
+  }, [currentStep]);
+
+  const handleClose = () => {
+    // Remove overlay
+    const overlay = document.querySelector('.welcome-overlay');
+    if (overlay) {
+      overlay.remove();
+    }
+    
+    // Remove all highlights and reset styles
+    document.querySelectorAll('.welcome-highlight').forEach(el => {
+      el.classList.remove('welcome-highlight', 'z-[55]');
+      el.style.removeProperty('color');
+      el.style.removeProperty('background-color');
+      el.querySelectorAll('*').forEach(child => {
+        child.style.removeProperty('color');
+      });
+    });
+
+    // Close menu if open
+    const addButton = document.querySelector('.add-button');
+    if (addButton && addButton.classList.contains('rotate-45')) {
+      addButton.click();
+    }
+
+    setShowModal(false);
+    onClose?.();
+  };
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
@@ -130,46 +166,10 @@ export default function WelcomeModal({ onClose }) {
     }
   };
 
-  const handleClose = () => {
-    // Remove overlay
-    const overlay = document.querySelector('.welcome-overlay');
-    if (overlay) {
-      overlay.remove();
-    }
-    
-    // Remove all highlights
-    document.querySelectorAll('.welcome-highlight').forEach(el => {
-      el.classList.remove('welcome-highlight', 'z-[55]', 'text-blue-500', 'brightness-150');
-      el.style.filter = '';
-      el.style.opacity = '';
-    });
-  
-    // Close menu if open
-    const addButton = document.querySelector('.add-button');
-    if (addButton && addButton.classList.contains('rotate-45')) {
-      addButton.click();
-    }
-  
-    setShowModal(false);
-    onClose?.();
-  };
-  
   const handleFinish = () => {
     handleClose();
     router.push('/profile');
   };
-  
-  // Update the X button click handler:
-  <Button 
-    variant="ghost" 
-    size="icon"
-    onClick={handleClose}
-    className="h-8 w-8"
-  >
-    <X className="h-4 w-4" />
-  </Button>
-  
-  
 
   if (!showModal) return null;
 
@@ -189,7 +189,7 @@ export default function WelcomeModal({ onClose }) {
           <Button 
             variant="ghost" 
             size="icon"
-            onClick={onClose}
+            onClick={handleClose}
             className="h-8 w-8"
           >
             <X className="h-4 w-4" />

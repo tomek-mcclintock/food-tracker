@@ -117,6 +117,11 @@ body {
 }
 
 /* Welcome Flow Styles */
+.welcome-overlay {
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 50;
+}
+
 .welcome-highlight {
   position: relative !important;
   z-index: 55 !important;
@@ -124,12 +129,30 @@ body {
   border-radius: 0.5rem !important;
 }
 
-.welcome-highlight.text-blue-500 {
-  color: rgb(59 130 246 / 1) !important;
+/* Strong overrides for navigation items */
+.welcome-highlight.add-button,
+.welcome-highlight.insights-tab,
+.welcome-highlight.wellness-button {
+  color: rgb(59 130 246) !important;
   filter: brightness(1.2) !important;
+  opacity: 1 !important;
 }
 
-.welcome-overlay {
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 50;
+.welcome-highlight.add-button {
+  background-color: rgb(59 130 246) !important;
+  color: white !important;
+}
+
+.welcome-highlight.insights-tab *,
+.welcome-highlight.wellness-button * {
+  color: rgb(59 130 246) !important;
+}
+
+/* Force nav items to be visible during welcome tour */
+.welcome-highlight .text-gray-500 {
+  color: rgb(59 130 246) !important;
+}
+
+.welcome-highlight svg {
+  color: inherit !important;
 }
