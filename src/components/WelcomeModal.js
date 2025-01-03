@@ -54,11 +54,11 @@ export default function WelcomeModal({ onClose }) {
     const currentStepData = steps[currentStep];
     let prevHighlight = steps[currentStep - 1]?.highlight;
     
-    // Clear previous highlights first
+    // Clear previous highlights and restore all items to normal state
     document.querySelectorAll('.welcome-highlight').forEach(el => {
-      el.classList.remove('welcome-highlight', 'z-[55]');
+      el.classList.remove('welcome-highlight', 'z-[55]', 'text-blue-500');
     });
-
+    
     // Remove any existing overlays
     const existingOverlay = document.querySelector('.welcome-overlay');
     if (existingOverlay) {
@@ -83,18 +83,40 @@ export default function WelcomeModal({ onClose }) {
       const target = document.querySelector(currentStepData.highlight);
       if (target) {
         target.classList.add('welcome-highlight', 'z-[55]');
+        // For navigation items, also highlight the text
+        if (['.add-button', '.insights-tab', '.wellness-button'].includes(currentStepData.highlight)) {
+          target.classList.add('text-blue-500', 'brightness-150');
+          // For wellness button specifically
+          if (currentStepData.highlight === '.wellness-button') {
+            target.style.filter = 'brightness(1.2)';
+            target.style.opacity = '1';
+          }
+        }
       }
     }
 
     return () => {
+      // Cleanup
       if (currentStepData?.highlight) {
         const target = document.querySelector(currentStepData.highlight);
         if (target) {
-          target.classList.remove('welcome-highlight', 'z-[55]');
+          target.classList.remove('welcome-highlight', 'z-[55]', 'text-blue-500', 'brightness-150');
+          if (target.classList.contains('wellness-button')) {
+            target.style.filter = '';
+            target.style.opacity = '';
+          }
         }
       }
+      // Ensure menu closes if we were highlighting the wellness button
+      if (prevHighlight === '.wellness-button' && addButton) {
+        setTimeout(() => {
+          if (addButton.classList.contains('rotate-45')) {
+            addButton.click();
+          }
+        }, 0);
+      }
     };
-  }, [currentStep]);
+}, [currentStep]);
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
@@ -108,11 +130,46 @@ export default function WelcomeModal({ onClose }) {
     }
   };
 
-  const handleFinish = () => {
+  const handleClose = () => {
+    // Remove overlay
+    const overlay = document.querySelector('.welcome-overlay');
+    if (overlay) {
+      overlay.remove();
+    }
+    
+    // Remove all highlights
+    document.querySelectorAll('.welcome-highlight').forEach(el => {
+      el.classList.remove('welcome-highlight', 'z-[55]', 'text-blue-500', 'brightness-150');
+      el.style.filter = '';
+      el.style.opacity = '';
+    });
+  
+    // Close menu if open
+    const addButton = document.querySelector('.add-button');
+    if (addButton && addButton.classList.contains('rotate-45')) {
+      addButton.click();
+    }
+  
     setShowModal(false);
-    router.push('/profile');
     onClose?.();
   };
+  
+  const handleFinish = () => {
+    handleClose();
+    router.push('/profile');
+  };
+  
+  // Update the X button click handler:
+  <Button 
+    variant="ghost" 
+    size="icon"
+    onClick={handleClose}
+    className="h-8 w-8"
+  >
+    <X className="h-4 w-4" />
+  </Button>
+  
+  
 
   if (!showModal) return null;
 
