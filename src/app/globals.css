@@ -122,6 +122,10 @@ body {
   z-index: 55 !important;
   box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5) !important;
   border-radius: 0.5rem !important;
+}
+
+.welcome-highlight.text-blue-500 {
+  color: rgb(59 130 246 / 1) !important;
   filter: brightness(1.2) !important;
 }
 
