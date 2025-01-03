@@ -16,32 +16,32 @@ const steps = [
       title: "Add Food",
       content: "Press the + button to add foods. Take photos or describe your meals - our AI will analyze ingredients and potential sensitivities.",
       position: "bottom",
-      arrow: { direction: 0, style: { bottom: '100px', left: '50%', transform: 'translateX(-50%)' }}
+      targetSelector: '.add-button'
     },
     {
       title: "Track Wellness",
       content: "Log how you feel after meals by using the Check In option in the + menu. This helps identify patterns and sensitivities.",
       position: "center",
       shouldExpandMenu: true,
-      arrow: { direction: -45, style: { bottom: '200px', left: '50%', transform: 'translateX(-50%)' }}
+      targetSelector: '.wellness-button'
     },
     {
       title: "View Insights",
       content: "See patterns between foods and symptoms in the Insights tab to better understand your sensitivities.",
       position: "bottom",
-      arrow: { direction: 0, style: { bottom: '100px', right: '25%' }}
+      targetSelector: '.insights-tab'
     },
     {
       title: "Try Example Data",
       content: "Before adding your own data, you can explore the app with example data. This will add 2 weeks of food and wellness entries to help you understand how the analysis works.",
       position: "top",
-      arrow: { direction: -90, style: { top: '200px', right: '30%' }}
+      targetSelector: '.example-data-button'
     },
     {
       title: "Reset When Ready",
       content: "Once you're done exploring, press Reset Data to clear the example data and start tracking your own meals.",
       position: "top",
-      arrow: { direction: -90, style: { top: '150px', right: '30%' }}
+      targetSelector: '.reset-data-button'
     }
 ];
 
@@ -106,10 +106,8 @@ export default function WelcomeModal({ onClose }) {
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center">
-      <div className="fixed inset-0 bg-black bg-opacity-50" />
-      
-      {currentStepData.arrow && (
-        <Arrow {...currentStepData.arrow} />
+      {currentStepData.targetSelector && (
+        <Arrow targetSelector={currentStepData.targetSelector} />
       )}
 
       <div 
