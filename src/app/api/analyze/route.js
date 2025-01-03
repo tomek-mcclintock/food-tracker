@@ -1,19 +1,20 @@
 import { NextResponse } from 'next/server';
 
-async function analyzeWithGPT4o(description = '') {
-  const requestBody = {
-    model: "gpt-4o",
-    messages: [
-      {
-        role: "system",
-        content: "You are an expert food analyzer with deep knowledge of ingredients, allergens, and dietary sensitivities. Your analysis should be thorough, precise, and always prioritize user-provided descriptions over automated detection when available. Pay special attention to hidden ingredients and common allergens that might not be immediately visible."
-      },
-      {
-        role: "user",
-        content: [
-          { 
-            type: "text", 
-            text: `${description ? `The user describes this food as: ${description}\n\n` : ''}Analyze this food and:
+async function analyzeWithGPT4o(description = '', imageBase64 = null) {
+  const messages = [
+    {
+      role: "system",
+      content: "You are an expert food analyzer with deep knowledge of ingredients, allergens, and dietary sensitivities. Your analysis should be thorough, precise, and always prioritize user-provided descriptions over automated detection when available. Pay special attention to hidden ingredients and common allergens that might not be immediately visible."
+    }
+  ];
+
+  // Build the user message based on whether we have an image
+  const userMessage = {
+    role: "user",
+    content: [
+      { 
+        type: "text",  
+        text: `${description ? `The user describes this food as: ${description}\n\n` : ''}Analyze this food and:
 
 Return a JSON object with exactly this format:
 {
@@ -74,6 +75,23 @@ Important guidelines:
     ]
   };
 
+  // Add image to content if provided
+  if (imageBase64) {
+    userMessage.content.push({
+      type: "image_url",
+      image_url: {
+        url: imageBase64.startsWith('data:') ? imageBase64 : `data:image/jpeg;base64,${imageBase64}`
+      }
+    });
+  }
+
+  messages.push(userMessage);
+
+  const requestBody = {
+    model: "gpt-4o",
+    messages: messages
+  };
+
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -84,8 +102,8 @@ Important guidelines:
   });
 
   if (!response.ok) {
-    console.error('GPT-4o response:', await response.json());
-    throw new Error('GPT-4o analysis failed');
+    const errorData = await response.json();
+    throw new Error(errorData.error?.message || 'GPT-4o analysis failed');
   }
 
   const data = await response.json();
@@ -98,26 +116,40 @@ Important guidelines:
   return JSON.parse(cleanContent);
 }
 
+
 export async function POST(request) {
   try {
     const body = await request.json();
     let foodDescription = body.messages[0].content[0].text;
     let imageContent = body.messages[0].content.find(c => c.type === 'image');
     
-    if (imageContent) {
-      try {
+    // For debugging
+    console.log('Food description:', foodDescription);
+    console.log('Has image content:', !!imageContent);
+
+    if (!foodDescription && !imageContent) {
+      throw new Error('No food description or image provided');
+    }
+
+    try {
+      // Handle either image+text or text-only analysis
+      if (imageContent) {
+        // Image with optional description
         const imageBase64 = imageContent.source.data;
         return NextResponse.json(await analyzeWithGPT4o(foodDescription, imageBase64));
-      } catch (error) {
-        console.error('GPT-4o analysis failed:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+      } else {
+        // Text-only analysis
+        console.log('Performing text-only analysis');
+        const results = await analyzeWithGPT4o(foodDescription);
+        console.log('Analysis results:', results);
+        return NextResponse.json(results);
       }
-    } else {
-      // Text-only analysis
-      return NextResponse.json(await analyzeWithGPT4o(foodDescription));
+    } catch (error) {
+      console.error('Analysis error:', error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
   } catch (error) {
-    console.error('Server error:', error);
+    console.error('Request error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
