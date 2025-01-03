@@ -1,3 +1,5 @@
+"use client"
+
 import { NextResponse } from 'next/server';
 
 async function analyzeWithGPT4o(description = '', imageBase64 = null) {
@@ -13,7 +15,7 @@ async function analyzeWithGPT4o(description = '', imageBase64 = null) {
     role: "user",
     content: [
       { 
-        type: "text",  
+        type: "text", 
         text: `${description ? `The user describes this food as: ${description}\n\n` : ''}Analyze this food and:
 
 Return a JSON object with exactly this format:
@@ -62,15 +64,7 @@ Important guidelines:
   * Many seasonings contain salicylates
   * Pre-made sauces often contain sulfites
   * Breads/buns contain gluten and often corn
-  * Most condiments contain FODMAP ingredients` 
-          },
-          {
-            type: "image_url",
-            image_url: {
-              "url": imageBase64.startsWith('data:') ? imageBase64 : `data:image/jpeg;base64,${imageBase64}`
-            }
-          }
-        ]
+  * Most condiments contain FODMAP ingredients`
       }
     ]
   };
