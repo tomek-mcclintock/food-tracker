@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-async function analyzeWithGPT4o(imageBase64, description = '') {
+async function analyzeWithGPT4o(description = '') {
   const requestBody = {
     model: "gpt-4o",
     messages: [
@@ -83,9 +83,13 @@ Important guidelines:
     body: JSON.stringify(requestBody)
   });
 
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.error?.message || 'GPT-4o analysis failed');
+  if (!response.ok) {
+    console.error('GPT-4o response:', await response.json());
+    throw new Error('GPT-4o analysis failed');
+  }
 
+  const data = await response.json();
+  
   const cleanContent = data.choices[0].message.content
     .replace(/```json\n/, '')
     .replace(/\n```/, '')
@@ -103,16 +107,17 @@ export async function POST(request) {
     if (imageContent) {
       try {
         const imageBase64 = imageContent.source.data;
-        return NextResponse.json(await analyzeWithGPT4o(imageBase64, foodDescription));
+        return NextResponse.json(await analyzeWithGPT4o(foodDescription, imageBase64));
       } catch (error) {
         console.error('GPT-4o analysis failed:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });
       }
     } else {
       // Text-only analysis
-      return NextResponse.json(await analyzeWithGPT4o(null, foodDescription));
+      return NextResponse.json(await analyzeWithGPT4o(foodDescription));
     }
   } catch (error) {
+    console.error('Server error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

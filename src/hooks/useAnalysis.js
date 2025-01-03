@@ -13,12 +13,12 @@ export function useAnalysis() {
     
     try {
       const content = [];
-
+  
       content.push({
         type: "text",
         text: description || "Please analyze this food"
       });
-
+  
       if (imageSrc) {
         const base64Data = imageSrc.split('base64,')[1];
         content.push({
@@ -29,7 +29,9 @@ export function useAnalysis() {
           }
         });
       }
-
+  
+      console.log('Sending request with content:', content);
+  
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -40,14 +42,17 @@ export function useAnalysis() {
           }]
         })
       });
-
-      if (!response.ok) {
-        throw new Error('Analysis failed');
-      }
-
+  
       const data = await response.json();
+      
+      if (!response.ok) {
+        console.error('Analysis failed with response:', data);
+        throw new Error(data.error || 'Analysis failed');
+      }
+  
+      console.log('Analysis results:', data);
       setResults(data);
-
+  
     } catch (err) {
       console.error('Error in analyzeFood:', err);
       setError(err.message);
@@ -55,6 +60,7 @@ export function useAnalysis() {
       setAnalyzing(false);
     }
   }, []);
+  
 
   return { analyzing, results, error, analyzeFood, setResults };
 }
