@@ -117,14 +117,15 @@ body {
 }
 
 /* Welcome Flow Styles */
+.welcome-highlight {
+  position: relative !important;
+  z-index: 55 !important;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5) !important;
+  border-radius: 0.5rem !important;
+  filter: brightness(1.2) !important;
+}
+
 .welcome-overlay {
   background: rgba(0, 0, 0, 0.5);
   z-index: 50;
-}
-
-.welcome-highlight {
-  position: relative;
-  z-index: 55 !important;
-  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.5) !important;
-  border-radius: 0.5rem;
 }
