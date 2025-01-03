@@ -116,20 +116,21 @@ const Profile = () => {
 
  return (
    <div className="max-w-2xl mx-auto pb-24 px-4">
-     <div className="flex justify-between items-center mb-4">
-       <h1 className="text-2xl font-bold">Profile</h1>
-       <button 
-         onClick={() => setShowWelcome(true)} 
-         className="p-2 hover:bg-gray-100 rounded-full"
-       >
-         <HelpCircle className="w-6 h-6 text-gray-500" />
-       </button>
-     </div>
+<div className="flex justify-between items-center mb-4">
+  <h1 className="text-2xl font-bold">Profile</h1>
+  <button 
+    onClick={() => setShowWelcome(true)} 
+    className="p-2 hover:bg-gray-100 rounded-full"
+  >
+    <HelpCircle className="w-6 h-6 text-gray-500" />
+  </button>
+</div>
 
-     <Card className="mb-6">
-       <CardHeader>
-         <CardTitle>Profile</CardTitle>
-       </CardHeader>
+<Card className="mb-6">
+  <CardHeader>
+    <CardTitle>Account Details</CardTitle>
+  </CardHeader>
+
        <CardContent className="space-y-4">
          <div className="flex items-center gap-3 text-gray-600">
            <Mail className="w-5 h-5" />

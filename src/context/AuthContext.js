@@ -11,6 +11,8 @@ import {
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import Cookies from 'js-cookie';  // We'll need to install this
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 export const AuthContext = createContext({});
 
@@ -39,34 +41,33 @@ export const AuthContextProvider = ({ children }) => {
 
   const googleProvider = new GoogleAuthProvider();
 
-  const signInWithGoogle = async () => {
-    try {
-      const provider = new GoogleAuthProvider();
-      provider.setCustomParameters({
-        prompt: 'select_account',
-        redirect_uri: `${window.location.origin}/history`
+const signInWithGoogle = async () => {
+  try {
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({
+      prompt: 'select_account'
+    });
+    
+    const result = await signInWithPopup(auth, provider);
+    
+    // Check if this is their first sign in
+    const userSettingsRef = doc(db, 'userSettings', result.user.uid);
+    const userSettingsDoc = await getDoc(userSettingsRef);
+    
+    if (!userSettingsDoc.exists()) {
+      await setDoc(userSettingsRef, {
+        hasSeenWelcome: false,
+        createdAt: new Date().toISOString()
       });
-      
-      const result = await signInWithPopup(auth, provider);
-      
-      // Check if this is their first sign in
-      const userSettingsRef = doc(db, 'userSettings', result.user.uid);
-      const userSettingsDoc = await getDoc(userSettingsRef);
-      
-      if (!userSettingsDoc.exists()) {
-        await setDoc(userSettingsRef, {
-          hasSeenWelcome: false,
-          createdAt: new Date().toISOString()
-        });
-      }
-      
-      window.location.replace('/history');
-      return result;
-    } catch (error) {
-      console.error('Google Sign In Error:', error);
-      throw error;
     }
-  };
+    
+    return result;
+  } catch (error) {
+    console.error('Google Sign In Error:', error);
+    throw error;
+  }
+};
+
   
 
   const signup = async (email, password) => {

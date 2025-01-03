@@ -21,7 +21,7 @@ const steps = [
       title: "Track Wellness",
       content: "Log how you feel after meals by using the Check In option in the + menu. This helps identify patterns and sensitivities.",
       highlight: ".wellness-button",
-      position: "centre",  // Changed to top
+      position: "top",  // Changed to top
       shouldExpandMenu: true
     },
     {
